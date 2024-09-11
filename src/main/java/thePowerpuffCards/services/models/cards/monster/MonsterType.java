@@ -1,4 +1,25 @@
 package thePowerpuffCards.services.models.cards.monster;
 
-public class MonsterType {
+public enum MonsterType {
+    GOBLIN(10),
+    DRAGON(50),
+    WIZARD(30),
+    ORK(25),
+    KNIGHT(40),
+    KRAKEN(60),
+    FIRE_ELF(35);
+
+
+    private final int damage;
+
+    MonsterType(int damage) {
+
+        this.damage = damage;
+    }
+
+    public int getDamage() {
+
+        return damage;
+    }
+
 }
