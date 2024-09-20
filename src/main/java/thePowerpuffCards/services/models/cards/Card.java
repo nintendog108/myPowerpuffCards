@@ -1,6 +1,6 @@
 package thePowerpuffCards.services.models.cards;
 
-public class Card {
+public abstract class Card {
     private final ElementType type;
     private final String name;
     private final int damage;

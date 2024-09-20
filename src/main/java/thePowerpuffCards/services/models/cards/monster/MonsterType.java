@@ -7,7 +7,7 @@ public enum MonsterType {
     ORK(25),
     KNIGHT(40),
     KRAKEN(60),
-    FIRE_ELF(35);
+    BUBBLES(35);
 
 
     private final int damage;

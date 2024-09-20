@@ -1,15 +1,17 @@
 package thePowerpuffCards.services.models.cards;
 
+import java.util.List;
+
 public class Stack {
-    private Card stackCards;
+    private List<Card> stackCards;
     public Card getCards(){
 
-        return stackCards;
+        return (Card) stackCards;
     }
-    public void addCard(){
+    public void addCard(Card card){
         //TODO: addCard
     }
-    public void RemoveCard(){}
+    public void RemoveCard(Card card){}
     //TODO: removeCard
 
 }

@@ -1,0 +1,104 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+@startuml
+
+package com.mtcg.models.cards {
+    abstract class Card {
+        - String name
+        - int damage
+        - ElementType elementType
+    }
+
+    class MonsterCard extends Card {
+        - MonsterType monsterType
+        + String getMonster()
+    }
+
+    class SpellCard extends Card
+    {
+
+    }
+
+
+    enum ElementType {
+        FIRE
+        WATER
+        EARTH
+        WIND
+        DIVINE
+    }
+
+    enum MonsterType {
+        GOBLIN
+        DRAGON
+        WIZARD
+        ORK
+        KNIGHT
+        KRAKEN
+        BUBBLES
+    }
+}
+
+package com.mtcg.models {
+    class User {
+        - String username
+        - String password
+        - int coins
+        - Stack stack
+        + void register(Card card)
+        + void login(String username, String password)
+
+
+    }
+
+    class Stack {
+        - List<Card> StackCards
+        + void addCard(Card card)
+        + void removeCard(Card card)
+        + List<Card> getCards()
+    }
+
+    class Deck {
+        - List<Card> deckCards
+        + void addCard(Card card)
+        + void removeCard(Card card)
+        + List<Card> getCards()
+    }
+
+    class Battles {
+        - List<Card> player1Deck
+        - List<Card> player2Deck
+        + void startBattle()
+    }
+
+    class ScoreBoard {
+        - Map<String, Integer> userScores
+        + void updateScore(String username, int score)
+    }
+
+    class Trade {
+        - Card offeredCard
+        - int minDamage
+        + void proposeTrade()
+        + void acceptTrade()
+    }
+
+    User --> Package
+    User --> Stack
+    User --> Deck
+    User --> Battles
+    User <-- ScoreBoard
+    User --> Trade
+}
+
+package com.mtcg.handlers {
+    class LogInHandler {}
+    class PackageHandler {}
+    class RegisterHandler {}
+}
+
+@enduml
+
+
