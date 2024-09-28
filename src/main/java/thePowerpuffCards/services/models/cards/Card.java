@@ -9,11 +9,13 @@ public abstract class Card {
 
         return name;
     }
+
     public int getDamage() {
 
         return damage;
     }
-    public ElementType getType() {
+
+    public ElementType getElementType() {
 
         return type;
     }
@@ -23,5 +25,4 @@ public abstract class Card {
         this.damage = damage;
         this.type = type;
     } // ctor
-
 }

@@ -23,7 +23,7 @@ public class ScoreBoard {
     }
 
     public int getScore(String username) {
-        return userScores.getOrDefault(username, 100); //
+        return userScores.getOrDefault(username, 100);
     }
 
     public void showScoreBoard() {
