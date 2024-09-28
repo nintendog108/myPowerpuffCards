@@ -4,21 +4,12 @@ import thePowerpuffCards.services.models.cards.Card;
 import java.util.List;
 
 
-public class Deck {
-    private List<Card> deckCards;
-
-    public Deck(List<Card> deckCards) {
-        this.deckCards = deckCards;
+public class Deck extends CardPile {
+    public Deck() {
+        super();
     }
 
-    public void addCard(Card card){
-        deckCards.add(card);
+    public void selectBestCards() {
     }
-    public void RemoveCard(){
-        deckCards.removeLast();
-    }
-    public Card getCards(){
 
-        return null;
-    }
 }
