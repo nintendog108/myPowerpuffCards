@@ -1,12 +1,11 @@
 package thePowerpuffCards.services;
 
 import thePowerpuffCards.services.models.cards.Card;
-import thePowerpuffCards.services.models.cards.CardPile;
 import thePowerpuffCards.services.models.cards.Stack;
 import thePowerpuffCards.services.models.cards.monster.MonsterCard;
 import thePowerpuffCards.services.models.cards.spell.SpellCard;
 
-public class Trade {
+public class TradeService {
     private String tradeId;
     private Card offeredCard;
     private String requiredCardType;
@@ -14,7 +13,7 @@ public class Trade {
     private String offeredByUser;
 
 
-    public Trade(String tradeId, Card offeredCard, String requiredCardType, int minDamage, String offeredByUser) {
+    public TradeService(String tradeId, Card offeredCard, String requiredCardType, int minDamage, String offeredByUser) {
         this.tradeId = tradeId;
         this.offeredCard = offeredCard;
         this.requiredCardType = requiredCardType;

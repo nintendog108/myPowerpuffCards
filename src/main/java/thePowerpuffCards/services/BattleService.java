@@ -2,16 +2,12 @@ package thePowerpuffCards.services;
 
 import thePowerpuffCards.services.models.cards.Card;
 
-import thePowerpuffCards.services.models.cards.monster.MonsterCard;
-import thePowerpuffCards.services.models.cards.monster.MonsterType;
-import thePowerpuffCards.services.models.cards.spell.SpellCard;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 
-public class Battle {
+public class BattleService {
     private List<Card> player1Deck;
     private List<Card> player2Deck;
     private String player1;
@@ -19,7 +15,7 @@ public class Battle {
 
     private static final int MAX_ROUNDS = 100;
 
-    public Battle(String player1, String player2, List<Card> player1Deck, List<Card> player2Deck) {
+    public BattleService(String player1, String player2, List<Card> player1Deck, List<Card> player2Deck) {
         this.player1Deck = new ArrayList<>(player1Deck); // deck kopie, so könenn wir die änderungen simulieren
         this.player2Deck = new ArrayList<>(player2Deck);
         this.player1 = player1;

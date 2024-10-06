@@ -1,4 +1,4 @@
-package thePowerpuffCards.services.models;
+package thePowerpuffCards.services;
 
 import thePowerpuffCards.services.models.cards.Card;
 import thePowerpuffCards.services.models.cards.Deck;
@@ -6,7 +6,7 @@ import thePowerpuffCards.services.models.cards.Stack;
 
 import java.util.List;
 
-public class User {
+public class UserService {
     private String username;
     private String password;
     private int coins;
@@ -14,7 +14,7 @@ public class User {
     private Deck deck;
     private int ELO;
 
-    public User(String username, String password) {
+    public UserService(String username, String password) {
         this.username = username;
         this.password = password;
         this.coins = 20;
