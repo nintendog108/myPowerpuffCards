@@ -1,17 +1,18 @@
 package org.example;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import thePowerpuffCards.api.controller.SessionController;
+import thePowerpuffCards.api.controller.UserController;
+import thePowerpuffCards.database.Database;
+import thePowerpuffCards.server.HttpServer;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        Database database = new Database();
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
-        }
+        UserController userController = new UserController(database);
+        SessionController sessionController = new SessionController(database);
+
+        HttpServer server = new HttpServer(userController, sessionController);
+        server.start(10001);
     }
 }

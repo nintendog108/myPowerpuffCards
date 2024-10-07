@@ -1,26 +1,35 @@
-package thePowerpuffCards.services;
+package thePowerpuffCards.services.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import thePowerpuffCards.services.models.cards.Card;
 import thePowerpuffCards.services.models.cards.Deck;
 import thePowerpuffCards.services.models.cards.Stack;
 
 import java.util.List;
+import java.util.Objects;
 
-public class UserService {
+// equals verwenden und hasCode, wie kann ich mit contains verwenden  id users.contains(user)[return false;) return dalse. users.ass(user);, else return true.
+// erstellen eine Database klasse mit
+public class User {
+    @JsonProperty("username")
     private String username;
+    @JsonProperty("password")
     private String password;
     private int coins;
     private Stack stack;
     private Deck deck;
     private int ELO;
+    private String token;
 
-    public UserService(String username, String password) {
-        this.username = username;
+    public User(String username, String password) {
+        this.setUsername(username);
         this.password = password;
         this.coins = 20;
         this.stack = new Stack();
         this.deck = new Deck();
         this.ELO = 100;
+    }
+    public User() { //für jakson
     }
     public void addCardsToStack(List<Card> newCards) {
         for (Card card : newCards) {
@@ -56,6 +65,7 @@ public class UserService {
             System.out.println(deck.toString()); //deck anzeigen
         }
     }
+
     public Stack getStack() {
         return stack;
     }
@@ -82,5 +92,48 @@ public class UserService {
 
     public void setELO(int ELO) {
         this.ELO = ELO;
+    }
+
+    @JsonProperty("Password")
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+    @JsonProperty("Username")
+    public void setUsername(String username) {
+        this.username = username;
+        this.token = username + "-mtcgToken";
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(username, user.username);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
+    }
+
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 }
