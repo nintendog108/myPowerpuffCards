@@ -22,26 +22,24 @@ public class ClientHandler implements Runnable {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()))) {
 
-            // Erste Zeile der HTTP-Anfrage lesen (z.B. "POST /users/register HTTP/1.1")
             String line = in.readLine();
             if (line != null) {
                 String[] requestParts = line.split(" ");
-                String method = requestParts[0];  // HTTP-Methode: GET, POST, DELETE
-                String path = requestParts[1];    // Pfad der Anfrage: /users/register, /sessions
+                String method = requestParts[0];
+                String path = requestParts[1];
 
-                // Liest die Header der HTTP-Anfrage, bis eine leere Zeile gefunden wird (Ende der Header)
+
                 while ((line = in.readLine()) != null && !line.isEmpty()) {
-                    // Überspringe die Header-Linien, weil wir nur den Body brauchen
-                    System.out.println("Header: " + line);  // Optional: Header zu Debugging-Zwecken anzeigen
+
+                    System.out.println("Header: " + line);
                 }
 
-                // Ab hier ist der nächste Input der JSON-Body
+
                 StringBuilder body = new StringBuilder();
-                while (in.ready()) {  // Solange noch Daten verfügbar sind, Body lesen
+                while (in.ready()) {
                     body.append((char) in.read());
                 }
 
-                // Aufruf des entsprechenden Controllers basierend auf dem Pfad
                 if (path.startsWith("/users")) {
                     userController.handleRequest(method, path, body.toString(), out);
                 } else if (path.startsWith("/sessions")) {

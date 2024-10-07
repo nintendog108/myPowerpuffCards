@@ -94,7 +94,7 @@ public class User {
         this.ELO = ELO;
     }
 
-    @JsonProperty("Password")
+    @JsonProperty("password")
     public void setPassword(String password) {
         this.password = password;
     }
@@ -109,7 +109,7 @@ public class User {
     public String getPassword() {
         return password;
     }
-    @JsonProperty("Username")
+    @JsonProperty("username")
     public void setUsername(String username) {
         this.username = username;
         this.token = username + "-mtcgToken";
