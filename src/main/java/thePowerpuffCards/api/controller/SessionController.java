@@ -13,10 +13,10 @@ public class SessionController {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static Database database;
 
+
     public SessionController(Database db) {
         database = db;
     }
-
 
     public static void handleRequest(String method, String path, String body, BufferedWriter out) throws IOException {
         switch (method) {
@@ -48,9 +48,7 @@ public class SessionController {
         }
     }
 
-
     private static void createSession(String body, BufferedWriter out) throws IOException {
-
         User user = objectMapper.readValue(body, User.class);
         User foundUser = database.findUserByUsernameAndPassword(user.getUsername(), user.getPassword());
 
@@ -61,11 +59,11 @@ public class SessionController {
 
             database.addSession(session);
 
-
+            // Gib den Token als plain text zurück
             out.write("HTTP/1.1 200 OK\r\n");
             out.write("Content-Type: text/plain\r\n");
             out.write("\r\n");
-            out.write(foundUser.getToken());
+            out.write(foundUser.getToken());  // token as plain text
         } else {
             out.write("HTTP/1.1 401 Unauthorized\r\n");
             out.write("Content-Type: text/plain\r\n");
@@ -75,6 +73,7 @@ public class SessionController {
         out.flush();
     }
 
+    // Liste aller aktiven Sessions ausgeben (GET /sessions)
     private static void listSessions(BufferedWriter out) throws IOException {
         String sessionsJson = objectMapper.writeValueAsString(database.getAllSessions());
 

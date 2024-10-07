@@ -19,7 +19,7 @@ public class UserController {
         switch (method) {
             case "POST":
                 if (path.equals("/users")) {
-                    registerUser(body, out);  // Registrierung (POST /users)
+                    registerUser(body, out);
                 } else {
                     sendNotFound(out);
                 }
@@ -31,7 +31,9 @@ public class UserController {
     }
 
     private static void registerUser(String body, BufferedWriter out) throws IOException {
+
         User newUser = objectMapper.readValue(body, User.class);
+
 
         if (database.isUserExisting(newUser.getUsername())) {
             out.write("HTTP/1.1 409 Conflict\r\n");

@@ -3,87 +3,60 @@ package thePowerpuffCards.database;
 import thePowerpuffCards.services.models.Session;
 import thePowerpuffCards.services.models.User;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
-    private final Map<String, User> userStorage;
+    private final List<User> users = new ArrayList<>();  // Liste zur Speicherung der Benutzer
+    private final List<Session> sessions = new ArrayList<>();  // Liste zur Speicherung der aktiven Sessions
 
-    private final Map<String, Session> sessionStorage;
+    // Konstruktor
+    public Database() {}
 
-
-    public Database() {
-        this.userStorage = new HashMap<>();
-        this.sessionStorage = new HashMap<>();
-    }
-
-
+    // Benutzer zur Datenbank hinzufügen
     public void addUser(User user) {
         if (!isUserExisting(user.getUsername())) {
-            userStorage.put(user.getUsername(), user);
-        } else {
-            System.out.println("User already exists: " + user.getUsername());
+            users.add(user);
         }
     }
 
-
-    public void addSession(Session session) {
-        if (!sessionStorage.containsKey(session.getSessionId())) {
-            sessionStorage.put(session.getSessionId(), session);
-        } else {
-            System.out.println("Session already exists: " + session.getSessionId());
-        }
-    }
-
-
+    // Überprüfen, ob ein Benutzer mit dem gegebenen Benutzernamen existiert
     public boolean isUserExisting(String username) {
-        return userStorage.containsKey(username);
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-
-    public User findUser(String username) {
-        return userStorage.get(username);
-    }
-
-
-    public Session findSessionById(String sessionId) {
-        return sessionStorage.get(sessionId);
-    }
-
-
-    public Map<String, User> getAllUsers() {
-        return userStorage;
-    }
-
-
-    public Map<String, Session> getAllSessions() {
-        return sessionStorage;
-    }
-
-    // Methode, um einen Benutzer anhand seines Tokens zu finden
-    public User findUserByToken(String token) {
-        for (User user : userStorage.values()) {
-            if (user.getToken() != null && user.getToken().equals(token)) {
+    // Sucht einen Benutzer basierend auf Benutzername und Passwort
+    public User findUserByUsernameAndPassword(String username, String password) {
+        for (User user : users) {
+            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
                 return user;
             }
         }
         return null;
     }
 
-
-    public User findUserByUsernameAndPassword(String username, String password) {
-        User user = userStorage.get(username);
-        if (user != null && user.getPassword().equals(password)) {
-            return user;
-        }
-        return null;
+    // Fügt eine neue Session zur Datenbank hinzu
+    public void addSession(Session session) {
+        sessions.add(session);
     }
 
+    // Gibt alle aktiven Sessions zurück
+    public List<Session> getAllSessions() {
+        return sessions;
+    }
+
+    // Entfernt eine Session anhand der Session-ID
     public boolean removeSessionById(String sessionId) {
-        if (sessionStorage.containsKey(sessionId)) {
-            sessionStorage.remove(sessionId);
-            return true;
-        }
-        return false;
+        return sessions.removeIf(session -> session.getSessionId().equals(sessionId));
+    }
+
+    // Rückgabe aller Benutzer
+    public List<User> getAllUsers() {
+        return users;
     }
 }
