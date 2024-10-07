@@ -11,9 +11,9 @@ import java.util.Objects;
 // equals verwenden und hasCode, wie kann ich mit contains verwenden  id users.contains(user)[return false;) return dalse. users.ass(user);, else return true.
 // erstellen eine Database klasse mit
 public class User {
-    @JsonProperty("username")
+    @JsonProperty("Username")
     private String username;
-    @JsonProperty("password")
+    @JsonProperty("Password")
     private String password;
     private int coins;
     private Stack stack;
@@ -94,7 +94,7 @@ public class User {
         this.ELO = ELO;
     }
 
-    @JsonProperty("password")
+    @JsonProperty("Password")
     public void setPassword(String password) {
         this.password = password;
     }
@@ -109,7 +109,7 @@ public class User {
     public String getPassword() {
         return password;
     }
-    @JsonProperty("username")
+    @JsonProperty("Username")
     public void setUsername(String username) {
         this.username = username;
         this.token = username + "-mtcgToken";
