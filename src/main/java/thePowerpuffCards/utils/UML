@@ -1,11 +1,8 @@
 @startuml
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
+skinparam backgroundColor #9
 
-' Packages
-package "org.example" {
-    class Main
-}
 
 package "thePowerpuffCards" {
     package "api.controller" {
@@ -131,9 +128,40 @@ package "thePowerpuffCards" {
     }
 
     package "services" {
-        class BattleService
-        class ScoreBoard
-        class TradeService
+        class BattleService {
+            - List<Card> player1Deck
+            - List<Card> player2Deck
+            - String player1
+            - String player2
+            - static int MAX_ROUNDS = 100
+            + startBattle()
+            - calculateRoundResult(Card player1Card, Card player2Card): int
+            - calculateDamage(Card attackingCard, Card defendingCard): int
+            - determineWinner()
+        }
+
+        class ScoreBoard {
+            - Map<String, Integer> userScores
+            + addUser(String username)
+            + updateScore(String username, int score)
+            + getScore(String username): int
+            + showScoreBoard()
+        }
+
+        class TradeService {
+            - String tradeId
+            - Card offeredCard
+            - String requiredCardType
+            - int minDamage
+            - String offeredByUser
+            + validateCardForTrade(Card card): boolean
+            + executeTrade(Card buyerCard, Stack buyerStack, Stack sellerStack): boolean
+            + getTradeId(): String
+            + getOfferedCard(): Card
+            + getRequiredCardType(): String
+            + getMinDamage(): int
+            + getOfferedByUser(): String
+        }
     }
 }
 
@@ -148,7 +176,8 @@ ClientHandler --> SessionController
 Deck --> Card
 Stack --> Card
 Package --> Card
-MonsterCard --> Card
-SpellCard --> Card
+BattleService --> Card
+TradeService --> Card
+TradeService --> Stack
 
 @enduml
