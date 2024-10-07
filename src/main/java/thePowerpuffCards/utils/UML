@@ -94,9 +94,7 @@ package com.mtcg.models {
 }
 
 package com.mtcg.handlers {
-    class LogInHandler {}
-    class PackageHandler {}
-    class RegisterHandler {}
+
 }
 
 @enduml
