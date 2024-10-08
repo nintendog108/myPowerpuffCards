@@ -179,5 +179,8 @@ Package --> Card
 BattleService --> Card
 TradeService --> Card
 TradeService --> Stack
+MonsterType --> MonsterCard
+ElementType --> Card
+ElementType --> SpellCard
 
 @enduml
