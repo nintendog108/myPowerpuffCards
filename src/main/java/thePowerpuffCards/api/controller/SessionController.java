@@ -59,7 +59,7 @@ public class SessionController {
 
             database.addSession(session);
 
-            // Gib den Token als plain text zurück
+            //token als plain text ( content-type
             out.write("HTTP/1.1 200 OK\r\n");
             out.write("Content-Type: text/plain\r\n");
             out.write("\r\n");
@@ -73,7 +73,7 @@ public class SessionController {
         out.flush();
     }
 
-    // Liste aller aktiven Sessions ausgeben (GET /sessions)
+    // get all sessions ausgeben, important
     private static void listSessions(BufferedWriter out) throws IOException {
         String sessionsJson = objectMapper.writeValueAsString(database.getAllSessions());
 

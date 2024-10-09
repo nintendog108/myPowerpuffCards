@@ -40,7 +40,7 @@ public class TradeService {
 
     public boolean executeTrade(Card buyerCard, Stack buyerStack, Stack sellerStack) {
         if (!validateCardForTrade(buyerCard)) {
-            System.out.println("trade failed, you have shitty cards");
+            System.out.println("trade failed, you have shitty cards now.");
             return false;
         }
 
@@ -51,7 +51,7 @@ public class TradeService {
         sellerStack.removeCard(offeredCard);
         buyerStack.addCard(offeredCard);
 
-        System.out.println("trade successful!   " + offeredByUser + " traded " + offeredCard.getName() + " for " + buyerCard.getName());
+        System.out.println("Trade successful!   " + offeredByUser + " traded " + offeredCard.getName() + " for " + buyerCard.getName());
         return true;
     }
 

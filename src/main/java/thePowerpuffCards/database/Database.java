@@ -5,7 +5,7 @@ import thePowerpuffCards.services.models.User;
 
 import java.util.ArrayList;
 import java.util.List;
-
+//TODO: es wird noch databaseeisiert
 public class Database {
     private final List<User> users = new ArrayList<>();
     private final List<Session> sessions = new ArrayList<>();
@@ -28,7 +28,6 @@ public class Database {
         return false;
     }
 
-    // Sucht einen Benutzer basierend auf Benutzername und Passwort
     public User findUserByUsernameAndPassword(String username, String password) {
         for (User user : users) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {

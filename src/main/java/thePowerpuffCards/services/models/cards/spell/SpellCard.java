@@ -8,3 +8,4 @@ public class SpellCard extends Card {
         super(name, damage, type);
     }
 }
+//TODO

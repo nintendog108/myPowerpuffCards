@@ -8,8 +8,7 @@ import thePowerpuffCards.services.models.cards.Stack;
 import java.util.List;
 import java.util.Objects;
 
-// equals verwenden und hasCode, wie kann ich mit contains verwenden  id users.contains(user)[return false;) return dalse. users.ass(user);, else return true.
-// erstellen eine Database klasse mit
+
 public class User {
     @JsonProperty("Username")
     private String username;
@@ -29,18 +28,18 @@ public class User {
         this.deck = new Deck();
         this.ELO = 100;
     }
-    public User() { //für jakson
+    public User() { //für jackson
     }
     public void addCardsToStack(List<Card> newCards) {
         for (Card card : newCards) {
             stack.addCard(card);
         }
-        System.out.println(" just added " + newCards.size() + " new cards to the stack.");
+        System.out.println(" Just added " + newCards.size() + " new cards to the stack.");
     }
 
     public void defineDeck(List<Card> selectedCards) {
         if (selectedCards.size() != 4) {
-            throw new IllegalArgumentException("deck must consist of exactly 4 cards.");
+            throw new IllegalArgumentException("Deck must consist of exactly 4 cards.");
         }
 
         for (Card card : selectedCards) { //checken if alle karten vorhanden sind
@@ -55,12 +54,12 @@ public class User {
     // beste karten auswählen und das deck setzen
     public void autoSelectBestDeck() {
         deck.selectBestCardsFromCollection(stack.getCards());
-        System.out.println("deck magically defined with the 4 best cards.");
+        System.out.println("Deck magically defined with the 4 best cards.");
     }
 
     public void showDeck() {
         if (!deck.isValidDeck()) {
-            System.out.println("deck is not valid. Please select 4 cards.");
+            System.out.println("Deck is not valid. Please select 4 cards.");
         } else {
             System.out.println(deck.toString()); //deck anzeigen
         }

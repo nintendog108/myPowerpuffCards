@@ -10,7 +10,7 @@ public class Deck extends CardPile {
 
     public void defineDeck(List<Card> selectedCards) {
         if (selectedCards.size() != 4) {
-            throw new IllegalArgumentException("a deck must consist of exactly 4 cards.");
+            throw new IllegalArgumentException("A deck must consist of exactly 4 cards.");
         }
         this.cards = selectedCards;
     }
@@ -22,7 +22,7 @@ public class Deck extends CardPile {
 
     public void selectBestCardsFromCollection(List<Card> collection) {
         if (collection.size() < 4) {
-            throw new IllegalArgumentException("not enough cards in the collction to build a deck.");
+            throw new IllegalArgumentException("Not enough cards in the collection to build a deck.");
         }
 
         // höchsten schaden zuerst

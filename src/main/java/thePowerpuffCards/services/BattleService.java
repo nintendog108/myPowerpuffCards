@@ -75,3 +75,4 @@ public class BattleService {
         }
     }
 }
+//TODO: logik!

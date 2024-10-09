@@ -1,7 +1,6 @@
 @startuml
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-skinparam backgroundColor #9
 
 
 package "thePowerpuffCards" {
@@ -170,7 +169,7 @@ Database --> SessionController
 Database --> UserController
 UserController --> User
 SessionController --> Session
-ClientHandler --> HttpServer
+
 ClientHandler --> UserController
 ClientHandler --> SessionController
 Deck --> Card
