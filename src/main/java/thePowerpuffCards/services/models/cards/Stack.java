@@ -5,7 +5,6 @@ public class Stack extends CardPile {
         super();
     }
 
-
     public void showStack() {
         System.out.println("Current Stack:");
         for (Card card : cards) {

@@ -6,4 +6,5 @@ public enum ElementType {
     EARTH,
     WIND,
     DIVINE,
+    NORMAL,
 }
