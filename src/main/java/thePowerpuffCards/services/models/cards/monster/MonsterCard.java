@@ -9,7 +9,8 @@ public class MonsterCard extends Card {
         this.monsterType=MonsterType.valueOf(monsterType);
     }
 
-    public String getMonsterType() {
-        return monsterType.toString();
+    public MonsterType getMonsterType() {   //now it returns Monsterype statt String um das im Battle vergleichen zu können
+        return monsterType;  // assuming 'monsterType' is of type MonsterType
     }
+
 }

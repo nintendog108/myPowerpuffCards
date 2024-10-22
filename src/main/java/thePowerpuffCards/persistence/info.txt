@@ -1,0 +1,11 @@
+Repository Layer (Datenzugriffsschicht)
+
+Diese Schicht kümmert sich um die Interaktion mit der Datenbank.
+
+Sie könnte JDBC (Java Database Connectivity) verwenden, um SQL-Abfragen auszuführen
+und die Ergebnisse in Java-Objekte zu transformieren.
+
+Hier findet auch die Fehlerbehandlung bei Datenbankoperationen statt.
+
+- Entities
+- JPA könnte hier zum Einsatz kommen
