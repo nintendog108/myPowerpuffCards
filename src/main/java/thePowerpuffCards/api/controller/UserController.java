@@ -10,6 +10,9 @@ import java.io.IOException;
 public class UserController {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static Database database;
+    //muss UserDao bekommen
+    // public Response addUser,
+
 
     public UserController(Database db) {
         database = db;

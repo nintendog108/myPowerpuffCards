@@ -1,5 +1,7 @@
 package thePowerpuffCards.services.models.cards;
 
+import java.util.List;
+
 public class Stack extends CardPile {
     public Stack() {
         super();
@@ -14,5 +16,11 @@ public class Stack extends CardPile {
 
     public int countCardsByElement(ElementType elementType) {
         return (int) cards.stream().filter(card -> card.getElementType() == elementType).count();
+    }
+
+    public void addCards(List<Card> cards) {
+        for (Card card : cards) {
+            cards.add(card);
+        }
     }
 }

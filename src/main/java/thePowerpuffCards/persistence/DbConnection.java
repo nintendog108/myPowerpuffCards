@@ -26,9 +26,16 @@ public class DbConnection implements Closeable {
         }
     }
 
-    public Connection connect(String database) throws SQLException {
-        return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + database, "swenuser", "swenpw");
+    public Connection connect(String database) {
+        try {
+            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + database, "swenuser", "swenpw");
+        } catch (SQLException e) {
+            System.err.println("Connection to the database failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
+
 
     public Connection connect() throws SQLException {
         return connect("swen");
@@ -36,15 +43,21 @@ public class DbConnection implements Closeable {
 
 
     public Connection getConnection() {
-        if( connection==null ) {
+        if (connection == null) {
             try {
                 connection = DbConnection.getInstance().connect();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                if (connection != null) {
+                    System.out.println("Database connection established.");
+                }
+            } catch (SQLException e) {
+                System.err.println("Error getting connection: " + e.getMessage());
+                e.printStackTrace();
             }
         }
         return connection;
     }
+
+
 
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {

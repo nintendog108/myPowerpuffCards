@@ -64,7 +64,7 @@ public class BattleService {
         }
 
         determineWinner();
-        return battleLog.toString(); // this is the requied log
+        return battleLog.toString(); // this is the required log
     }
 
     private int calculateRoundResult(Card player1Card, Card player2Card) {
@@ -119,13 +119,13 @@ public class BattleService {
 
 
 
-   /* private int handleMonsterSpecialties(MonsterCard card1, MonsterCard card2) {
+   /* private int handleMonsterSpecialties(MonsterCard card1, MonsterCard card2){
         // Goblin gegen Drachen
         if (card1.getMonsterType().equals(MonsterType.GOBLIN) && card2.getMonsterType().equals(MonsterType.DRAGON)) {
             battleLog.append("Goblin ist zu ängstlich, um gegen einen Drachen zu kämpfen!\n");
             return -1; // Goblin verliert automatisch
         }
-        if (card1.getMonsterType().equals(MonsterType.DRAGON) && card2.getMonsterType().equals(MonsterType.GOBLIN)) {
+        if (card1.getMonsterType().equals(MonsterType.DRAGON) && card2.getMonsterType().equals(MonsterType.GOBLIN)){
             battleLog.append("Goblin ist zu ängstlich, um gegen einen Drachen zu kämpfen!\n");
             return 1; // Goblin verliert automatisch
         }
@@ -141,7 +141,7 @@ public class BattleService {
         }
 
         // Ritter ertrinkt sofort bei Wassersprüchen
-        if (card1.getMonsterType().equals(MonsterType.KNIGHT) && card2.getElementType() == ElementType.WATER) {
+        if (card1.getMonsterType().equals(MonsterType.KNIGHT) && card2.getElementType() == ElementType.WATER){
             battleLog.append("Ritter ertrinkt sofort bei Wassersprüchen!\n");
             return -1; // Ritter verliert sofort
         }
@@ -152,11 +152,11 @@ public class BattleService {
 
         // Kraken ist immun gegen Zauber
 
-        if (card1.getMonsterType().equals(MonsterType.KRAKEN) && card2 instanceof SpellCard) {
+        if (card1.getMonsterType().equals(MonsterType.KRAKEN) && card2 instanceof SpellCard){
             battleLog.append("Der Kraken ist immun gegen Zauber!\n");
             return 1; // Kraken gewinnt automatisch gegen Zauber
         }
-        if (card2.getMonsterType().equals(MonsterType.KRAKEN) && card1 instanceof SpellCard) {
+        if (card2.getMonsterType().equals(MonsterType.KRAKEN) && card1 instanceof SpellCard){
             battleLog.append("Der Kraken ist immun gegen Zauber!\n");
             return -1; // Kraken gewinnt automatisch gegen Zauber
         }

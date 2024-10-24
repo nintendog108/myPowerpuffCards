@@ -11,56 +11,58 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class UsersDaoDb implements Dao<User> {
 
-    /**
-     * initializes the database with its tables
-     */
-    // PostgreSQL documentation: https://www.postgresqltutorial.com/postgresql-create-table/
+    private static final Logger logger = Logger.getLogger(UsersDaoDb.class.getName());
+
     public static void initDb() {
-        // Re-create the database
         try (Connection connection = DbConnection.getInstance().connect("")) {
-            DbConnection.executeSql(connection, "DROP DATABASE swen", false);
+            DbConnection.executeSql(connection, "DROP DATABASE IF EXISTS swen", false);
             DbConnection.executeSql(connection, "CREATE DATABASE swen", false);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.severe("Error initializing the database: " + e.getMessage());
         }
 
-        // Create the users table
         try {
             DbConnection.getInstance().executeSql("""
-                CREATE TABLE IF NOT EXISTS users (
-                    id serial PRIMARY KEY,
-                    username VARCHAR (255) NOT NULL,
-                    password VARCHAR (255) NOT NULL,
-                    token VARCHAR (255),
-                    last_updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-                )
-                """);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            CREATE TABLE IF NOT EXISTS user (
+                uid serial PRIMARY KEY,
+                username VARCHAR (255) NOT NULL,
+                password VARCHAR (255) NOT NULL,
+                token VARCHAR (255),
+                coins INT DEFAULT 20,
+                last_updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """);
+        } catch (SQLException e) {
+            logger.severe("Error creating the user table: " + e.getMessage());
         }
     }
+
 
     @Override
     public Optional<User> get(int id) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                SELECT id, username, password, token 
-                FROM users 
-                WHERE id = ?
+                SELECT uid, username, password, token, coins
+                FROM user
+                WHERE uid = ?
                 """)
         ) {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return Optional.of(new User(
+                User user = new User(
                         resultSet.getString(2),  // username
                         resultSet.getString(3)   // password
-                ));
+                );
+                user.setToken(resultSet.getString(4));  // token
+                user.setId(resultSet.getInt(1));        // Set the ID in User object
+                return Optional.of(user);
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.severe("Error fetching user: " + e.getMessage());
         }
         return Optional.empty();
     }
@@ -69,8 +71,8 @@ public class UsersDaoDb implements Dao<User> {
     public Collection<User> getAll() {
         ArrayList<User> result = new ArrayList<>();
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                SELECT id, username, password, token 
-                FROM users 
+                SELECT uid, username, password, token, coins
+                FROM user
                 """)
         ) {
             ResultSet resultSet = statement.executeQuery();
@@ -80,10 +82,12 @@ public class UsersDaoDb implements Dao<User> {
                         resultSet.getString(3)  // password
                 );
                 user.setToken(resultSet.getString(4)); // token
+                user.setCoins(resultSet.getInt(5));     // Coins setzen
+                user.setId(resultSet.getInt(1));       // Set the ID in User object
                 result.add(user);
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.severe("Error fetching users: " + e.getMessage());
         }
         return result;
     }
@@ -91,55 +95,59 @@ public class UsersDaoDb implements Dao<User> {
     @Override
     public void save(User user) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                INSERT INTO users 
-                (username, password, token) 
-                VALUES (?, ?, ?);
-                """)
+            INSERT INTO user
+            (username, password, token, coins)
+            VALUES (?, ?, ?, ?)
+            RETURNING uid;
+            """)
         ) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
             statement.setString(3, user.getToken());
-            statement.execute();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            statement.setInt(4, user.getCoins());  // Füge die Coins des Benutzers hinzu
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                user.setId(resultSet.getInt(1));  // Setze die ID des neu eingefügten Benutzers
+            }
+        } catch (SQLException e) {
+            logger.severe("Error saving user: " + e.getMessage());
         }
     }
 
+
     @Override
     public void update(User user, String[] params) {
-        // Update the user object with new parameters
-        user.setUsername(Objects.requireNonNull(params[1], "Username cannot be null"));
-        user.setPassword(Objects.requireNonNull(params[2], "Password cannot be null"));
-        user.setToken(Objects.requireNonNull(params[3], "Token cannot be null"));
+        user.setUsername(Objects.requireNonNull(params[0], "Username cannot be null"));
+        user.setPassword(Objects.requireNonNull(params[1], "Password cannot be null"));
+        user.setToken(Objects.requireNonNull(params[2], "Token cannot be null"));
 
-        // Persist the updated item
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                UPDATE users 
-                SET username = ?, password = ?, token = ?
-                WHERE id = ?;
+                UPDATE user
+                SET username = ?, password = ?, token = ?, coins = ?
+                WHERE uid = ?;
                 """)
         ) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
             statement.setString(3, user.getToken());
-            statement.setInt(4, user.hashCode());  // Use hashcode to represent the user's unique ID
+            statement.setInt(4, user.getId()); // Use the user's stored ID
             statement.execute();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.severe("Error updating user: " + e.getMessage());
         }
     }
 
     @Override
     public void delete(User user) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                DELETE FROM users 
-                WHERE id = ?;
+                DELETE FROM user
+                WHERE uid = ?;
                 """)
         ) {
-            statement.setInt(1, user.hashCode());
+            statement.setInt(1, user.getId());
             statement.execute();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.severe("Error deleting user: " + e.getMessage());
         }
     }
 }
