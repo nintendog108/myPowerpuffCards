@@ -24,7 +24,7 @@ public class DaoTestMain {
         System.out.println("User updated: " + user);
 
         // Test: Benutzer löschen
-        usersDaoDb.delete(user);
-        System.out.println("User deleted: " + user);
+        //usersDaoDb.delete(user);
+        //System.out.println("User deleted: " + user);
     }
 }
