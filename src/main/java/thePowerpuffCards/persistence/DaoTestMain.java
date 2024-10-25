@@ -10,7 +10,7 @@ public class DaoTestMain {
         UsersDaoDb usersDaoDb = new UsersDaoDb();
 
         // Test: Neuen Benutzer speichern
-        User user = new User("testUser", "testPass");
+        User user = new User("bubbles", "bubbles");
         usersDaoDb.save(user);
         System.out.println("User saved: " + user);
 
@@ -20,7 +20,7 @@ public class DaoTestMain {
 
         // Test: Benutzer aktualisieren
         user.setUsername("updatedUser");
-        usersDaoDb.update(user, new String[]{"1", "updatedUser", "newPass"});
+        usersDaoDb.update(user, new String[]{"1", "updatedBubbles", "newBubbles"});
         System.out.println("User updated: " + user);
 
         // Test: Benutzer löschen

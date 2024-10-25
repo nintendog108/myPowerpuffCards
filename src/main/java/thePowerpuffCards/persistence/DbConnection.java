@@ -28,7 +28,7 @@ public class DbConnection implements Closeable {
 
     public Connection connect(String database) {
         try {
-            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + database, "swenuser", "swenpw");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + database, "admin", "password");
         } catch (SQLException e) {
             System.err.println("Connection to the database failed: " + e.getMessage());
             e.printStackTrace();
@@ -38,7 +38,7 @@ public class DbConnection implements Closeable {
 
 
     public Connection connect() throws SQLException {
-        return connect("swen");
+        return connect("monsterdb");
     }
 
 
