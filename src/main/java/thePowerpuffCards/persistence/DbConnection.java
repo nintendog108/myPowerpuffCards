@@ -5,18 +5,35 @@ import java.sql.*;
 
 public class DbConnection implements Closeable {
     private static DbConnection instance;
-
     private Connection connection;
 
-    /**
-     * Loads the PostgreSql JDBC-driver
-     * Don't forget to add the dependency in the pom.xml, like
-     *         <dependency>
-     *             <groupId>org.postgresql</groupId>
-     *             <artifactId>postgresql</artifactId>
-     *             <version>42.2.18.jre7</version>
-     *         </dependency>
-     */
+    public static void initDb() {
+        // re-create the database
+        try (Connection connection = getInstance().connect("postgres")) {
+            // Datenbank löschen und neu erstellen
+            executeSql(connection, "DROP DATABASE IF EXISTS monsterdb", true);
+            executeSql(connection, "CREATE DATABASE monsterdb", true);
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+
+        // Verbindung zur neu erstellten "monsterdb" herstellen
+        try (Connection connection = getInstance().connect("monsterdb")) {
+            String sql = """
+                    CREATE TABLE IF NOT EXISTS users (
+                        uid serial PRIMARY KEY,
+                        username VARCHAR (255) UNIQUE NOT NULL,
+                        password VARCHAR (255) NOT NULL,
+                        token VARCHAR (255) UNIQUE NOT NULL,
+                        coins INT NOT NULL DEFAULT 20
+                    );
+                    """;
+            executeSql(connection, sql);
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+    }
+
     public DbConnection() {
         try {
             Class.forName("org.postgresql.Driver");
@@ -36,11 +53,9 @@ public class DbConnection implements Closeable {
         }
     }
 
-
     public Connection connect() throws SQLException {
         return connect("monsterdb");
     }
-
 
     public Connection getConnection() {
         if (connection == null) {
@@ -57,9 +72,6 @@ public class DbConnection implements Closeable {
         return connection;
     }
 
-
-
-
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         return getConnection().prepareStatement(sql);
     }
@@ -69,12 +81,13 @@ public class DbConnection implements Closeable {
     }
 
     public static boolean executeSql(Connection connection, String sql, boolean ignoreIfFails) throws SQLException {
-        try ( Statement statement = connection.createStatement() ) {
-            statement.execute(sql );
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
             return true;
         } catch (SQLException e) {
-            if( !ignoreIfFails )
+            if (!ignoreIfFails) {
                 throw e;
+            }
             return false;
         }
     }
@@ -83,10 +96,9 @@ public class DbConnection implements Closeable {
         return executeSql(connection, sql, false);
     }
 
-
     @Override
     public void close() {
-        if( connection!=null ) {
+        if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException throwables) {
@@ -96,12 +108,10 @@ public class DbConnection implements Closeable {
         }
     }
 
-
-
-
     public static DbConnection getInstance() {
-        if(instance==null)
+        if (instance == null) {
             instance = new DbConnection();
+        }
         return instance;
     }
 }

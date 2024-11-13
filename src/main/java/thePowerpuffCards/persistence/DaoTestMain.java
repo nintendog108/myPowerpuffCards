@@ -10,7 +10,7 @@ public class DaoTestMain {
         UsersDaoDb usersDaoDb = new UsersDaoDb();
 
         // Test: Neuen Benutzer speichern
-        User user = new User("bubbles", "bubbles");
+        User user = new User("bubbles3", "bubbles3");
         usersDaoDb.save(user);
         System.out.println("User saved: " + user);
 
@@ -19,9 +19,9 @@ public class DaoTestMain {
         System.out.println("User retrieved: " + retrievedUser.orElse(null));
 
         // Test: Benutzer aktualisieren
-        user.setUsername("updatedUser");
-        usersDaoDb.update(user, new String[]{"1", "updatedBubbles", "newBubbles"});
-        System.out.println("User updated: " + user);
+       // user.setUsername("updatedBubbles");
+      //  usersDaoDb.update(user, new String[]{"1", "updatedBubbles", "newBubbles"});
+      //  System.out.println("User updated: " + user);
 
         // Test: Benutzer löschen
         //usersDaoDb.delete(user);

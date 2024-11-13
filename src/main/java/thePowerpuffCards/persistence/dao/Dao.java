@@ -14,6 +14,8 @@ public interface Dao<T> {
     // READ
     Optional<T> get(int id);
 
+    Optional<T> get(String text);
+
     Collection<T> getAll();
 
     // CREATE

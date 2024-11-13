@@ -9,3 +9,8 @@ Hier findet auch die Fehlerbehandlung bei Datenbankoperationen statt.
 
 - Entities
 - JPA könnte hier zum Einsatz kommen
+
+TODO: unit test schreiben <-last task
+TODO: DB-Kartenstruktur vereinfachen, 1 Cardtype Klasse reicht
+TODO: Database Klasse in UserController austauschen auf echtDB
+TODO:

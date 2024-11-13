@@ -17,6 +17,16 @@ public class UsersDaoDb implements Dao<User> {
 
     private static final Logger logger = Logger.getLogger(UsersDaoDb.class.getName());
 
+    public User findUserByUsernameAndPassword(String username, String password) {
+        Collection<User> users = getAll();
+        for (User user : users) {
+            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
     public boolean userExists(String username) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
             SELECT COUNT(*) FROM users WHERE username = ?
@@ -54,6 +64,11 @@ public class UsersDaoDb implements Dao<User> {
         } catch (SQLException e) {
             logger.severe("Error fetching user: " + e.getMessage());
         }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<User> get(String text) {
         return Optional.empty();
     }
 
