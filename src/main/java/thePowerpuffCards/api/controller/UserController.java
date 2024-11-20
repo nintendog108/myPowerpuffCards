@@ -32,6 +32,7 @@ public class UserController {
         }
     }
 
+
     private void registerUser(String body, BufferedWriter out) throws IOException {
         User newUser = objectMapper.readValue(body, User.class);
         Optional<User> dbUser = userDao.get(newUser.getUsername());

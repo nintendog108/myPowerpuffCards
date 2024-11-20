@@ -3,14 +3,10 @@ package thePowerpuffCards.persistence.dao;
 import thePowerpuffCards.services.models.User;
 import thePowerpuffCards.persistence.DbConnection;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class UsersDaoDb implements Dao<User> {
@@ -112,7 +108,7 @@ public class UsersDaoDb implements Dao<User> {
         ) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
-            statement.setString(3, user.getToken());
+            statement.setString(3, (user.getToken() != null) ? user.getToken() : "");
             statement.setInt(4, user.getCoins());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -159,6 +155,18 @@ public class UsersDaoDb implements Dao<User> {
             statement.execute();
         } catch (SQLException e) {
             logger.severe("Error deleting user: " + e.getMessage());
+        }
+    }
+
+    public void addSession(User user) {
+        try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
+                    UPDATE users SET token = ? WHERE username = ?;
+                    """)) {
+            statement.setString(1, user.getToken());
+            statement.setString(2, user.getUsername());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error adding session: " + e.getMessage());
         }
     }
 }

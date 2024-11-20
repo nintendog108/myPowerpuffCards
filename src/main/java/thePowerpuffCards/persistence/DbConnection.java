@@ -24,7 +24,7 @@ public class DbConnection implements Closeable {
                         uid serial PRIMARY KEY,
                         username VARCHAR (255) UNIQUE NOT NULL,
                         password VARCHAR (255) NOT NULL,
-                        token VARCHAR (255) UNIQUE NOT NULL,
+                        token VARCHAR (255),
                         coins INT NOT NULL DEFAULT 20
                     );
                     """;

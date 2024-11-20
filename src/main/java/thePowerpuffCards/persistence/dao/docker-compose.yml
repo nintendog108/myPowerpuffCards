@@ -23,12 +23,12 @@ services:
       - database
     ports:
       - 9090:8080
-      
+
     # usage of adminer:
     # http://localhost:9090
     # for server fill in 'database'
 
-    
+
 volumes:
   monsterdb-data: # named volumes can be managed easier using docker-compose
 

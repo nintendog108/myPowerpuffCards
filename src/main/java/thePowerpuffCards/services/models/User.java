@@ -26,6 +26,7 @@ public class User {
         this.setUsername(username);
         this.password = password;
         this.coins = 20;
+        this.token = "";
         this.stack = new Stack();
         this.deck = new Deck();
         this.ELO = 100;
@@ -119,7 +120,6 @@ public class User {
     @JsonProperty("Username")
     public void setUsername(String username) {
         this.username = username;
-        this.token = username + "-mtcgToken";
     }
 
     @Override
