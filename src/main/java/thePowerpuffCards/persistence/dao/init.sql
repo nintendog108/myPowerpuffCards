@@ -13,132 +13,93 @@ drop table if exists deck cascade;
 drop table if exists offer cascade;
 drop table if exists battlehistory cascade;
 drop table if exists card cascade;
-drop table if exists package_content cascade;
 drop table if exists package cascade;
-drop table if exists cardtype cascade;
-drop table if exists elementtype cascade;
-drop table if exists monstercard cascade;
-drop table if exists monstertype cascade;
-drop table if exists attacktype cascade;
 
 
--- create tables
-create table users (
-    uid serial primary key,
-    username varchar (255) unique not null ,
-    password varchar (255) not null ,
-    token varchar (255) unique not null ,
-    coins int not null default 20
+-- Erstellen der Tabelle user
+CREATE TABLE user (
+                      uid SERIAL PRIMARY KEY,
+                      username VARCHAR(255) UNIQUE NOT NULL,
+                      password VARCHAR(255) NOT NULL,
+                      coins INT NOT NULL DEFAULT 20,
+                      token VARCHAR(255) UNIQUE
+);
+
+-- Erstellen der Tabelle profile
+CREATE TABLE profile (
+                         uid INT PRIMARY KEY REFERENCES user(uid) ON DELETE CASCADE,
+                         firstname VARCHAR(255),
+                         lastname VARCHAR(255),
+                         image BYTEA
+);
+
+-- Erstellen der Tabelle scoreboard
+CREATE TABLE scoreboard (
+                            uid INT PRIMARY KEY REFERENCES user(uid) ON DELETE CASCADE,
+                            elo INT DEFAULT 1000,
+                            win INT DEFAULT 0,
+                            loss INT DEFAULT 0,
+                            draw INT DEFAULT 0
+);
+
+-- Erstellen der Tabelle card
+CREATE TABLE card (
+                      cid SERIAL PRIMARY KEY,
+                      name VARCHAR(255) NOT NULL,
+                      damage INT NOT NULL,
+                      elementtype VARCHAR(50),
+                      monstertype VARCHAR(50)
+);
+
+-- Erstellen der Tabelle package
+CREATE TABLE package (
+                         pid SERIAL PRIMARY KEY
+);
+
+-- Erstellen der Verbindungstabelle zwischen package und card
+CREATE TABLE package_card (
+                              pid INT REFERENCES package(pid) ON DELETE CASCADE,
+                              cid INT REFERENCES card(cid) ON DELETE CASCADE,
+                              PRIMARY KEY (pid, cid)
+);
+
+-- Erstellen der Tabelle deck
+CREATE TABLE deck (
+                      uid INT REFERENCES user(uid) ON DELETE CASCADE,
+                      cid INT REFERENCES card(cid) ON DELETE CASCADE,
+                      PRIMARY KEY (uid, cid)
+);
+
+-- Erstellen der Tabelle stack
+CREATE TABLE stack (
+                       uid INT REFERENCES user(uid) ON DELETE CASCADE,
+                       cid INT REFERENCES card(cid) ON DELETE CASCADE,
+                       PRIMARY KEY (uid, cid)
+);
+
+-- Erstellen der Tabelle offer
+CREATE TABLE offer (
+                       uid INT REFERENCES user(uid) ON DELETE CASCADE,
+                       cardid INT REFERENCES card(cid) ON DELETE CASCADE,
+                       cardtype VARCHAR(50),
+                       elementtyp VARCHAR(50),
+                       damage INT,
+                       PRIMARY KEY (uid, cardid)
+);
+
+-- Erstellen der Tabelle battlehistory
+CREATE TABLE battlehistory (
+                               id SERIAL PRIMARY KEY,
+                               uid_a INT REFERENCES user(uid) ON DELETE CASCADE,
+                               uid_b INT REFERENCES user(uid) ON DELETE CASCADE,
+                               cardid_a INT REFERENCES card(cid) ON DELETE CASCADE,
+                               cardid_b INT REFERENCES card(cid) ON DELETE CASCADE,
+                               battleid INT NOT NULL,
+                               timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
-create table profile (
-    uid int primary key ,
-    firstname varchar (255),
-    lastname varchar (255),
-    image bytea
-);
-
-
-create table scoreboard (
-    uid int primary key ,
-    elo int not null default 100,
-    win int not null default 0,
-    loss int not null default 0,
-    draw int not null default 0
-);
-
-
-create table stack (
-    uid int,
-    cardid int,
-    primary key (uid, cardid)
-);
-
-
-create table deck (
-    uid int,
-    cardid int,
-    boostcount int,
-    primary key (uid, cardid)
-);
-
-
-create table offer (
-    uid int,
-    cardid int,
-    ctypeid int,
-    etypeid int,
-    damage int,
-    primary key (uid, cardid)
-);
-
-
-create table battlehistory (
-    id serial primary key ,
-    uid_a int not null ,
-    uid_b int not null ,
-    cardid_a int not null ,
-    cardid_b int not null ,
-    battleid int not null,
-    timestamp timestamp not null default current_timestamp
-);
-
-
-create table card (
-    cardid serial primary key ,
-    ctypeid int not null
-);
-
-
-create table package_content (
-    packageid int,
-    cardid int,
-    primary key (packageid,cardid)
-);
-
-
-create table package (
-    packageid serial primary key ,
-    coins int not null default 5
-);
-
-
-create table cardtype (
-    ctypeid serial primary key ,
-    name varchar (255) unique not null ,
-    damage int ,
-    etypeid int
-);
-
-
-create table elementtype (
-    etypeid serial primary key ,
-    name varchar (255) unique not null
-);
-
-
-create table monstercard (
-    ctypeid int not null ,
-    mtypeid int not null ,
-    primary key (ctypeid,mtypeid)
-);
-
-
-create table monstertype (
-    mtypeid serial primary key ,
-    name varchar (255) unique not null ,
-    atypeid int not null
-);
-
-
-create table attacktype (
-    atypeid serial primary key ,
-    name varchar (255) unique not null
-);
-
-
-
+/*
 -- add foreign keys
 alter table profile
     add constraint fk_profile_users_uid
@@ -222,4 +183,4 @@ alter table battlehistory
             on delete set null ,
     add constraint fk_battlehistory_card_cardid_b
         foreign key (cardid_b) references card (cardid)
-            on delete set null ;
+            on delete set null ;*/

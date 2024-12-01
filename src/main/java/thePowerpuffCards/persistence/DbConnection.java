@@ -27,7 +27,8 @@ public class DbConnection implements Closeable {
                         token VARCHAR (255),
                         coins INT NOT NULL DEFAULT 20
                     );
-                    """;
+                    
+                    """; // TODO: package, card
             executeSql(connection, sql);
         } catch (SQLException exception) {
             exception.printStackTrace();

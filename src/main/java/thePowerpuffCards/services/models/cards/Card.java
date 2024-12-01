@@ -25,4 +25,5 @@ public abstract class Card {
         this.damage = damage;
         this.type = type;
     } // ctor
+
 }
