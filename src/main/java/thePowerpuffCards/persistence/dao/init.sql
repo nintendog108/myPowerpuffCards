@@ -3,8 +3,6 @@
 
 -- GRANT ALL PRIVILEGES ON DATABASE dist TO user;
 \c monsterdb
-
--- Drop tables if exits
 drop table if exists users cascade;
 drop table if exists profile cascade;
 drop table if exists scoreboard cascade;
@@ -15,9 +13,8 @@ drop table if exists battlehistory cascade;
 drop table if exists card cascade;
 drop table if exists package cascade;
 
-
 -- Erstellen der Tabelle user
-CREATE TABLE user (
+CREATE TABLE users (
                       uid SERIAL PRIMARY KEY,
                       username VARCHAR(255) UNIQUE NOT NULL,
                       password VARCHAR(255) NOT NULL,
@@ -27,7 +24,7 @@ CREATE TABLE user (
 
 -- Erstellen der Tabelle profile
 CREATE TABLE profile (
-                         uid INT PRIMARY KEY REFERENCES user(uid) ON DELETE CASCADE,
+                         uid INT PRIMARY KEY REFERENCES users(uid) ON DELETE CASCADE,
                          firstname VARCHAR(255),
                          lastname VARCHAR(255),
                          image BYTEA
@@ -35,51 +32,46 @@ CREATE TABLE profile (
 
 -- Erstellen der Tabelle scoreboard
 CREATE TABLE scoreboard (
-                            uid INT PRIMARY KEY REFERENCES user(uid) ON DELETE CASCADE,
+                            uid INT PRIMARY KEY REFERENCES users(uid) ON DELETE CASCADE,
                             elo INT DEFAULT 1000,
                             win INT DEFAULT 0,
                             loss INT DEFAULT 0,
                             draw INT DEFAULT 0
 );
 
--- Erstellen der Tabelle card
+CREATE TABLE packages (
+                          pid SERIAL PRIMARY KEY
+);
+
+-- Tabelle für Cards
 CREATE TABLE card (
                       cid SERIAL PRIMARY KEY,
                       name VARCHAR(255) NOT NULL,
                       damage INT NOT NULL,
-                      elementtype VARCHAR(50),
-                      monstertype VARCHAR(50)
+                      element_type VARCHAR(50) NOT NULL,
+                      monster_type VARCHAR(50),
+                      package_id INT,
+                      FOREIGN KEY (package_id) REFERENCES packages (pid) ON DELETE SET NULL
 );
 
--- Erstellen der Tabelle package
-CREATE TABLE package (
-                         pid SERIAL PRIMARY KEY
-);
-
--- Erstellen der Verbindungstabelle zwischen package und card
-CREATE TABLE package_card (
-                              pid INT REFERENCES package(pid) ON DELETE CASCADE,
-                              cid INT REFERENCES card(cid) ON DELETE CASCADE,
-                              PRIMARY KEY (pid, cid)
-);
 
 -- Erstellen der Tabelle deck
 CREATE TABLE deck (
-                      uid INT REFERENCES user(uid) ON DELETE CASCADE,
+                      uid INT REFERENCES users(uid) ON DELETE CASCADE,
                       cid INT REFERENCES card(cid) ON DELETE CASCADE,
                       PRIMARY KEY (uid, cid)
 );
 
 -- Erstellen der Tabelle stack
 CREATE TABLE stack (
-                       uid INT REFERENCES user(uid) ON DELETE CASCADE,
+                       uid INT REFERENCES users(uid) ON DELETE CASCADE,
                        cid INT REFERENCES card(cid) ON DELETE CASCADE,
                        PRIMARY KEY (uid, cid)
 );
 
 -- Erstellen der Tabelle offer
 CREATE TABLE offer (
-                       uid INT REFERENCES user(uid) ON DELETE CASCADE,
+                       uid INT REFERENCES users(uid) ON DELETE CASCADE,
                        cardid INT REFERENCES card(cid) ON DELETE CASCADE,
                        cardtype VARCHAR(50),
                        elementtyp VARCHAR(50),
@@ -90,15 +82,13 @@ CREATE TABLE offer (
 -- Erstellen der Tabelle battlehistory
 CREATE TABLE battlehistory (
                                id SERIAL PRIMARY KEY,
-                               uid_a INT REFERENCES user(uid) ON DELETE CASCADE,
-                               uid_b INT REFERENCES user(uid) ON DELETE CASCADE,
+                               uid_a INT REFERENCES users(uid) ON DELETE CASCADE,
+                               uid_b INT REFERENCES users(uid) ON DELETE CASCADE,
                                cardid_a INT REFERENCES card(cid) ON DELETE CASCADE,
                                cardid_b INT REFERENCES card(cid) ON DELETE CASCADE,
                                battleid INT NOT NULL,
                                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-
 /*
 -- add foreign keys
 alter table profile
@@ -183,4 +173,5 @@ alter table battlehistory
             on delete set null ,
     add constraint fk_battlehistory_card_cardid_b
         foreign key (cardid_b) references card (cardid)
-            on delete set null ;*/
+            on delete set null ;
+*/

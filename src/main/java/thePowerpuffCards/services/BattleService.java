@@ -90,9 +90,6 @@ public class BattleService {
         if (isKrakenImmuneToSpell(card1, card2)) return 1;
         if (isKrakenImmuneToSpell(card2, card1)) return -1;
 
-        if (isBubblesEvadingDragon(card1, card2)) return 1;
-        if (isBubblesEvadingDragon(card2, card1)) return -1;
-
         // Default case: Compare damage
         return Integer.compare(card1.getDamage(), card2.getDamage());
     }
@@ -113,9 +110,6 @@ public class BattleService {
         return kraken.getMonsterType() == MonsterType.KRAKEN && opponent instanceof SpellCard;
     }
 
-    private boolean isBubblesEvadingDragon(MonsterCard bubbles, MonsterCard dragon) {
-        return bubbles.getMonsterType() == MonsterType.BUBBLES && dragon.getMonsterType() == MonsterType.DRAGON;
-    }
 
 
 

@@ -27,6 +27,7 @@ public class Package {
         this.id = id;
     }
 
+    // Diese Methode wird benötigt
     public List<Card> getCards() {
         return cards;
     }

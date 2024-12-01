@@ -73,7 +73,7 @@ public class DbConnection implements Closeable {
         return connection;
     }
 
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int typeForwardOnly) throws SQLException {
         return getConnection().prepareStatement(sql);
     }
 
