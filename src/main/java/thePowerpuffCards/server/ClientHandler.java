@@ -1,5 +1,6 @@
 package thePowerpuffCards.server;
 
+import thePowerpuffCards.api.controller.Controller;
 import thePowerpuffCards.api.controller.SessionController;
 import thePowerpuffCards.api.controller.UserController;
 
@@ -8,13 +9,11 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
-    private final UserController userController;
-    private final SessionController sessionController;
+    private final Router router;
 
-    public ClientHandler(Socket clientSocket, UserController userController, SessionController sessionController) {
+    public ClientHandler(Socket clientSocket, Router router) {
         this.clientSocket = clientSocket;
-        this.userController = userController;
-        this.sessionController = sessionController;
+        this.router = router;
     }
 
     @Override
@@ -34,16 +33,13 @@ public class ClientHandler implements Runnable {
                     System.out.println("Header: " + line);
                 }
 
-
                 StringBuilder body = new StringBuilder();
                 while (in.ready()) {
                     body.append((char) in.read());
                 }
-
-                if (path.startsWith("/users")) {
-                    userController.handleRequest(method, path, body.toString(), out);
-                } else if (path.startsWith("/sessions")) {
-                    sessionController.handleRequest(method, path, body.toString(), out);
+                Controller controller;
+                if((controller = router.getController(path)) != null) {
+                    controller.handleRequest(method, path, body.toString(), out);
                 } else {
                     sendNotFound(out);
                 }

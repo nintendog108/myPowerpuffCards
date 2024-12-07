@@ -2,16 +2,17 @@ package thePowerpuffCards.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import thePowerpuffCards.persistence.dao.UsersDaoDb;
-import thePowerpuffCards.services.models.User;
+import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class SessionController {
+public class SessionController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UsersDaoDb usersDao;
 
     public SessionController(UsersDaoDb usersDao) {
+
         this.usersDao = usersDao;
     }
 

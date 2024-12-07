@@ -1,4 +1,4 @@
-package thePowerpuffCards.services;
+package thePowerpuffCards.core.services;
 
 import java.util.HashMap;
 import java.util.Map;

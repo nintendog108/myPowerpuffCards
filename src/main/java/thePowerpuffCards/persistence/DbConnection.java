@@ -10,8 +10,7 @@ public class DbConnection implements Closeable {
     public static void initDb() {
         // re-create the database
         try (Connection connection = getInstance().connect("postgres")) {
-            // Datenbank löschen und neu erstellen
-            executeSql(connection, "DROP DATABASE IF EXISTS monsterdb", true);
+            executeSql(connection, "DROP DATABASE monsterdb", true);
             executeSql(connection, "CREATE DATABASE monsterdb", true);
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -27,8 +26,21 @@ public class DbConnection implements Closeable {
                         token VARCHAR (255),
                         coins INT NOT NULL DEFAULT 20
                     );
-                    
-                    """; // TODO: package, card
+
+                    CREATE TABLE IF NOT EXISTS card (
+                       cid VARCHAR (255) PRIMARY KEY,
+                       name VARCHAR(255) NOT NULL,
+                       damage DOUBLE precision NOT NULL,
+                       element_type VARCHAR(50) NOT NULL,
+                      monster_type VARCHAR(50)
+                    );
+                    CREATE TABLE IF NOT EXISTS packages (
+                        pid SERIAL NOT NULL,
+                        cid VARCHAR (255) NOT NULL,
+                        PRIMARY KEY (pid, cid),
+                        FOREIGN KEY (cid) REFERENCES card(cid)
+                    );
+                    """;
             executeSql(connection, sql);
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -73,7 +85,7 @@ public class DbConnection implements Closeable {
         return connection;
     }
 
-    public PreparedStatement prepareStatement(String sql, int typeForwardOnly) throws SQLException {
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
         return getConnection().prepareStatement(sql);
     }
 
@@ -115,4 +127,16 @@ public class DbConnection implements Closeable {
         }
         return instance;
     }
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        getConnection().setAutoCommit(autoCommit);
+    }
+
+    public void commit() throws SQLException {
+        getConnection().commit();
+    }
+
+    public void rollback() throws SQLException {
+        getConnection().rollback();
+    }
+
 }

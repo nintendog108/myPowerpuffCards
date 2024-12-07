@@ -1,20 +1,18 @@
 package thePowerpuffCards.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import thePowerpuffCards.persistence.dao.Dao;
 import thePowerpuffCards.persistence.dao.UsersDaoDb;
-import thePowerpuffCards.services.models.User;
+import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Optional;
 
-public class UserController {
+public class UserController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final Dao<User> userDao;
+    private final UsersDaoDb usersDao; // Direkt UsersDaoDb verwenden
 
-    public UserController(Dao<User> userDao) {
-        this.userDao = userDao;
+    public UserController(UsersDaoDb usersDao) {
+        this.usersDao = usersDao; // Konstruktor erhält UsersDaoDb
     }
 
     public void handleRequest(String method, String path, String body, BufferedWriter out) throws IOException {
@@ -32,17 +30,18 @@ public class UserController {
         }
     }
 
-
     private void registerUser(String body, BufferedWriter out) throws IOException {
-        User newUser = objectMapper.readValue(body, User.class);
-        Optional<User> dbUser = userDao.get(newUser.getUsername());
-        if (dbUser.isPresent()) {
-            out.write("HTTP/1.1 409 Conflict\r\n");
+        User newUser = objectMapper.readValue(body, User.class); // JSON-Body parsen
+
+        if (usersDao.userExists(newUser.getUsername())) { //
+            // Benutzer existiert bereits
+            out.write("HTTP/1.1 409 - User already exists! \r\n");
             out.write("Content-Type: text/plain\r\n");
             out.write("\r\n");
             out.write("User already exists");
         } else {
-            userDao.save(newUser);
+            // Benutzer speichern
+            usersDao.save(newUser);
             out.write("HTTP/1.1 201 Created\r\n");
             out.write("\r\n");
         }

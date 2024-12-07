@@ -1,6 +1,6 @@
 package thePowerpuffCards.persistence.dao;
 
-import thePowerpuffCards.services.models.User;
+import thePowerpuffCards.core.models.User;
 import thePowerpuffCards.persistence.DbConnection;
 
 import java.sql.PreparedStatement;
@@ -25,8 +25,8 @@ public class UsersDaoDb implements Dao<User> {
 
     public boolean userExists(String username) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-            SELECT COUNT(*) FROM users WHERE username = ?
-            """, ResultSet.TYPE_FORWARD_ONLY)) {
+        SELECT COUNT(*) FROM users WHERE username = ?
+        """)) {
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -38,13 +38,14 @@ public class UsersDaoDb implements Dao<User> {
         return false;
     }
 
+
     @Override
     public Optional<User> get(int id) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
                 SELECT uid, username, password, token, coins
                 FROM users
                 WHERE uid = ?
-                """, ResultSet.TYPE_FORWARD_ONLY)
+                """)
         ) {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
@@ -74,7 +75,7 @@ public class UsersDaoDb implements Dao<User> {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
                 SELECT uid, username, password, token, coins
                 FROM users
-                """, ResultSet.TYPE_FORWARD_ONLY)
+                """)
         ) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -104,11 +105,11 @@ public class UsersDaoDb implements Dao<User> {
         (username, password, token, coins)
         VALUES (?, ?, ?, ?)
         RETURNING uid;
-        """, ResultSet.TYPE_FORWARD_ONLY)
+        """)
         ) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
-            statement.setString(3, (user.getToken() != null) ? user.getToken() : "");
+            statement.setString(3, "");
             statement.setInt(4, user.getCoins());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -132,7 +133,7 @@ public class UsersDaoDb implements Dao<User> {
                 UPDATE users
                 SET username = ?, password = ?, token = ?, coins = 15
                 WHERE uid = ?;
-                """, ResultSet.TYPE_FORWARD_ONLY)
+                """)
         ) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
@@ -149,7 +150,7 @@ public class UsersDaoDb implements Dao<User> {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
                 DELETE FROM users
                 WHERE uid = ?;
-                """, ResultSet.TYPE_FORWARD_ONLY)
+                """)
         ) {
             statement.setInt(1, user.getId());
             statement.execute();
@@ -160,7 +161,7 @@ public class UsersDaoDb implements Dao<User> {
 
     public void addSession(User user) {
         String sql = "UPDATE users SET token = ? WHERE username = ?";
-        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY)) {
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, user.getToken());
             stmt.setString(2, user.getUsername());
             stmt.executeUpdate();

@@ -11,12 +11,10 @@ import java.util.concurrent.Executors;
 
 public class HttpServer {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
-    private final UserController userController;
-    private final SessionController sessionController;
+    private final Router router;
 
-    public HttpServer(UserController userController, SessionController sessionController) {
-        this.userController = userController;
-        this.sessionController = sessionController;
+    public HttpServer() {
+        this.router = new Router();
     }
 
     public void start(int port) {
@@ -25,7 +23,7 @@ public class HttpServer {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
-                threadPool.submit(new ClientHandler(clientSocket, userController, sessionController));
+                threadPool.submit(new ClientHandler(clientSocket, router));
             }
         } catch (IOException e) {
             System.err.println("Error starting server on port " + port);

@@ -1,9 +1,9 @@
-package thePowerpuffCards.services;
+package thePowerpuffCards.core.services;
 
-import thePowerpuffCards.services.models.cards.Card;
-import thePowerpuffCards.services.models.cards.Stack;
-import thePowerpuffCards.services.models.cards.monster.MonsterCard;
-import thePowerpuffCards.services.models.cards.spell.SpellCard;
+import thePowerpuffCards.core.models.cards.Card;
+import thePowerpuffCards.core.models.cards.Stack;
+import thePowerpuffCards.core.models.cards.monster.MonsterCard;
+import thePowerpuffCards.core.models.cards.spell.SpellCard;
 
 public class TradeService {
     private String tradeId;

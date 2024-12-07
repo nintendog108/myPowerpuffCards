@@ -1,4 +1,4 @@
-package thePowerpuffCards.services.models.cards;
+package thePowerpuffCards.core.models.cards;
 
 import java.util.List;
 

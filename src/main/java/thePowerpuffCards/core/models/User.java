@@ -1,9 +1,9 @@
-package thePowerpuffCards.services.models;
+package thePowerpuffCards.core.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import thePowerpuffCards.services.models.cards.Card;
-import thePowerpuffCards.services.models.cards.Deck;
-import thePowerpuffCards.services.models.cards.Stack;
+import thePowerpuffCards.core.models.cards.Card;
+import thePowerpuffCards.core.models.cards.Deck;
+import thePowerpuffCards.core.models.cards.Stack;
 
 import java.util.List;
 import java.util.Objects;

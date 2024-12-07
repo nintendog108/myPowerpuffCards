@@ -1,4 +1,4 @@
-package thePowerpuffCards.services.models.cards;
+package thePowerpuffCards.core.models.cards;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class Deck extends CardPile {
         }
 
         // höchsten schaden zuerst
-        collection.sort((card1, card2) -> Integer.compare(card2.getDamage(), card1.getDamage()));
+        collection.sort((card1, card2) -> Double.compare(card2.getDamage(), card1.getDamage()));
         //the best four
         this.cards = collection.subList(0, 4);
     }

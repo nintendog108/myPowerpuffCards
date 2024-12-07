@@ -1,12 +1,12 @@
-package thePowerpuffCards.services.models.cards;
+package thePowerpuffCards.core.models.cards;
 
-import thePowerpuffCards.services.models.User;
+import thePowerpuffCards.core.models.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Package {
-    private long id; // Database-assigned ID
+    private int id;
     private List<Card> cards;
     private final int pckgCost = 5;
     private final int cardsinPckg = 5;
@@ -19,11 +19,11 @@ public class Package {
         }
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 

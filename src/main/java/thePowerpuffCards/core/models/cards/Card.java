@@ -1,17 +1,17 @@
-package thePowerpuffCards.services.models.cards;
+package thePowerpuffCards.core.models.cards;
 
 public abstract class Card {
-    private int id;
+    private String Id;
     private final ElementType type;
     private final String name;
-    private final int damage;
+    private final double damage;
 
     public String getName() {
 
         return name;
     }
 
-    public int getDamage() {
+    public double getDamage() {
 
         return damage;
     }
@@ -21,17 +21,18 @@ public abstract class Card {
         return type;
     }
 
-    public Card(String name, int damage, ElementType type) {
+    public Card(String Id, String name, Double damage, ElementType type) {
+        this.Id = Id;
         this.name = name;
         this.damage = damage;
         this.type = type;
     } // ctor
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(String id) {
+        this.Id = id;
     }
 
-    public long getId() {
-        return id;
+    public String getId() {
+        return Id;
     }
 }
