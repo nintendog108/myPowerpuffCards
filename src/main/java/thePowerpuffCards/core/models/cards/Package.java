@@ -19,6 +19,15 @@ public class Package {
         }
     }
 
+    public Package(int id, List<Card> cards) {
+        this.id = id;
+        this.cards = cards;
+    }
+
+    public Package(int packageId) {
+        this.id = packageId;
+    }
+
     public int getId() {
         return id;
     }
@@ -27,7 +36,6 @@ public class Package {
         this.id = id;
     }
 
-    // Diese Methode wird benötigt
     public List<Card> getCards() {
         return cards;
     }

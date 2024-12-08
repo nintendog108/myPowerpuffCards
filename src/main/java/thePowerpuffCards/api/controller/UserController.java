@@ -6,6 +6,7 @@ import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Map;
 
 public class UserController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -15,7 +16,7 @@ public class UserController extends Controller {
         this.usersDao = usersDao; // Konstruktor erhält UsersDaoDb
     }
 
-    public void handleRequest(String method, String path, String body, BufferedWriter out) throws IOException {
+    public void handleRequest(String method, String path, Map<String, String> header, String body, BufferedWriter out) throws IOException {
         switch (method) {
             case "POST":
                 if (path.equals("/users")) {

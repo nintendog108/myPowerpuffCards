@@ -6,6 +6,8 @@ import thePowerpuffCards.api.controller.UserController;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
@@ -27,22 +29,24 @@ public class ClientHandler implements Runnable {
                 String method = requestParts[0];
                 String path = requestParts[1];
 
-
+                Map<String, String> headers = new HashMap<>();
                 while ((line = in.readLine()) != null && !line.isEmpty()) {
-
-                    System.out.println("Header: " + line);
+                    String[] headerParts = line.split(": ");
+                    headers.put(headerParts[0], headerParts[1]);
                 }
+
 
                 StringBuilder body = new StringBuilder();
                 while (in.ready()) {
                     body.append((char) in.read());
                 }
                 Controller controller;
-                if((controller = router.getController(path)) != null) {
-                    controller.handleRequest(method, path, body.toString(), out);
+                if ((controller = router.getController(path)) != null) {
+                    controller.handleRequest(method, path, headers, body.toString(), out);
                 } else {
                     sendNotFound(out);
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();

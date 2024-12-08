@@ -6,6 +6,7 @@ import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Map;
 
 public class SessionController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -16,7 +17,7 @@ public class SessionController extends Controller {
         this.usersDao = usersDao;
     }
 
-    public void handleRequest(String method, String path, String body, BufferedWriter out) throws IOException {
+    public void handleRequest(String method, String path, Map<String, String> header, String body, BufferedWriter out) throws IOException {
         switch (method) {
             case "POST":
                 if (path.equals("/sessions")) {
@@ -36,7 +37,7 @@ public class SessionController extends Controller {
         User foundUser = usersDao.findUserByUsernameAndPassword(user.getUsername(), user.getPassword());
 
         if (foundUser != null) {
-            foundUser.setToken(foundUser.getUsername() + "-mctgToken");
+            foundUser.setToken(foundUser.getUsername() + "-mtcgToken");
             usersDao.addSession(foundUser);
             out.write("HTTP/1.1 200 OK\r\n");
             out.write("Content-Type: text/plain\r\n");

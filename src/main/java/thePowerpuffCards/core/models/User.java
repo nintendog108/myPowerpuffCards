@@ -89,7 +89,7 @@ public class User {
     }
 
     public void setCoins(int coins) {
-        this.coins = coins;
+        this.coins = 20;
     }
 
     public int getELO() {

@@ -1,6 +1,7 @@
 package thePowerpuffCards.persistence.dao;
 
 import thePowerpuffCards.core.models.User;
+import thePowerpuffCards.core.models.cards.Card;
 import thePowerpuffCards.persistence.DbConnection;
 
 import java.sql.PreparedStatement;
@@ -42,32 +43,60 @@ public class UsersDaoDb implements Dao<User> {
     @Override
     public Optional<User> get(int id) {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                SELECT uid, username, password, token, coins
-                FROM users
-                WHERE uid = ?
-                """)
-        ) {
+            SELECT uid, username, password, token, coins
+            FROM users
+            WHERE uid = ?
+            """)) {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 User user = new User(
-                        resultSet.getString(2),  // username
-                        resultSet.getString(3)   // password
+                        resultSet.getString("username"),
+                        resultSet.getString("password")
                 );
-                user.setToken(resultSet.getString(4));  // token
-                user.setId(resultSet.getInt(1));        // Set the ID in User object
+                user.setToken(resultSet.getString("token"));
+                user.setCoins(resultSet.getInt("coins"));
+                user.setId(resultSet.getInt("uid"));
                 return Optional.of(user);
             }
         } catch (SQLException e) {
-            logger.severe("Error fetching user: " + e.getMessage());
+            logger.severe("Error fetching user by ID: " + e.getMessage());
         }
         return Optional.empty();
     }
 
-    @Override
-    public Optional<User> get(String text) {
+
+    public Optional<User> getText(String username) {
+        System.out.println("Fetching user from database: " + username); // Debug-Ausgabe
+        String sql = """
+        SELECT uid, username, password, token, coins
+        FROM users
+        WHERE username = ?;
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet resultSet = stmt.executeQuery();
+            if (resultSet.next()) {
+                User user = new User(
+                        resultSet.getString("username"),
+                        resultSet.getString("password")
+                );
+                user.setId(resultSet.getInt("uid"));
+                user.setToken(resultSet.getString("token"));
+                user.setCoins(resultSet.getInt("coins"));
+                System.out.println("User found: " + user.getUsername() + " with Token: " + user.getToken()); // Debug-Ausgabe
+                return Optional.of(user);
+            } else {
+                System.out.println("No user found with username: " + username); // Debug-Ausgabe
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching user by username: " + e.getMessage()); // Debug-Ausgabe
+        }
         return Optional.empty();
     }
+
+
 
     @Override
     public Collection<User> getAll() {
@@ -120,7 +149,63 @@ public class UsersDaoDb implements Dao<User> {
         }
     }
 
+    public void updateUser(User user) {
+        String sql = """
+        UPDATE users
+        SET coins = ?
+        WHERE uid = ?
+    """;
 
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setInt(1, user.getCoins());
+            stmt.setInt(2, user.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error updating user: " + e.getMessage());
+        }
+    }
+
+    public void addCardToUser(User user, Card card) {
+        String sql = """
+        INSERT INTO user_cards (uid, cid)
+        VALUES (?, ?);
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setInt(1, user.getId());
+            stmt.setString(2, card.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error adding card to user: " + e.getMessage());
+        }
+    }
+
+
+    public User getUserByToken(String token) {
+        String sql = """
+        SELECT uid, username, password, token, coins
+        FROM users
+        WHERE token = ?;
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, token);
+            ResultSet resultSet = stmt.executeQuery();
+            if (resultSet.next()) {
+                User user = new User(
+                        resultSet.getString("username"),
+                        resultSet.getString("password")
+                );
+                user.setId(resultSet.getInt("uid"));
+                user.setToken(resultSet.getString("token"));
+                user.setCoins(resultSet.getInt("coins"));
+                return user;
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching user by token: " + e.getMessage());
+        }
+        return null;
+    }
 
     @Override
     public void update(User user, String[] params) {

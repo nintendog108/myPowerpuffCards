@@ -1,10 +1,16 @@
 package thePowerpuffCards.persistence.dao;
 
+import thePowerpuffCards.core.models.User;
 import thePowerpuffCards.core.models.cards.Card;
+import thePowerpuffCards.core.models.cards.ElementType;
+import thePowerpuffCards.core.models.cards.monster.MonsterCard;
+import thePowerpuffCards.core.models.cards.monster.MonsterType;
+import thePowerpuffCards.core.models.cards.spell.SpellCard;
 import thePowerpuffCards.persistence.DbConnection;
 import thePowerpuffCards.core.models.cards.Package;
 
 import java.sql.*;
+import java.util.*;
 import java.util.logging.Logger;
 public class PackageDaoDb {
 
@@ -61,7 +67,99 @@ public class PackageDaoDb {
         return -1;
     }
 
+    public Package acquirePackage() throws SQLException {
+        String sql = """
+        DELETE FROM packages
+        WHERE pid = (SELECT MIN(pid) FROM packages)
+        RETURNING pid, cid
+    """;
 
+        Map<Integer, List<Card>> packageMap = new HashMap<>();
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int packageId = rs.getInt("pid");
+                String cardId = rs.getString("cid");
+
+                Card card = getCardById(cardId);
+                packageMap.computeIfAbsent(packageId, k -> new ArrayList<>()).add(card);
+            }
+        }
+
+        if (packageMap.isEmpty()) {
+            return null; // Kein Paket verfügbar
+        }
+
+        int packageId = packageMap.keySet().iterator().next();
+        return new Package(packageId, packageMap.get(packageId));
+    }
+
+    private Card getCardById(String cardId) throws SQLException {
+        String sql = """
+        SELECT cid, name, damage, element_type, monster_type
+        FROM card
+        WHERE cid = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, cardId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String name = rs.getString("name");
+                double damage = rs.getDouble("damage");
+                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
+                MonsterType monsterType = rs.getString("monster_type") != null
+                        ? MonsterType.valueOf(rs.getString("monster_type"))
+                        : null;
+
+                return monsterType != null
+                        ? new MonsterCard(cardId, name, damage, elementType, monsterType)
+                        : new SpellCard(cardId, name, damage, elementType);
+            }
+        }
+        return null;
+    }
+
+    public Collection<Package> getAll() {
+        ArrayList<Package> result = new ArrayList<>();
+        try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
+            SELECT packages.pid, packages.cid, card.name, card.damage, card.element_type, card.monster_type
+            FROM packages
+            JOIN card ON packages.cid = card.cid
+            ORDER BY packages.pid
+            """)
+        ) {
+            ResultSet resultSet = statement.executeQuery();
+            int oldPid = -1;
+            List<Card> cards = new ArrayList<>();
+            Package pckg = null;
+            while (resultSet.next()) {
+                int packageId = resultSet.getInt("pid");
+                if((oldPid != -1) && (packageId != oldPid)){
+                    pckg = new Package(oldPid, cards);
+                    result.add(pckg);
+                    cards.clear();
+                }
+                oldPid = packageId;
+                String id = resultSet.getString("cid");
+                String name = resultSet.getString("name");
+                double damage = resultSet.getDouble("damage");
+                ElementType elementType = ElementType.valueOf(resultSet.getString("element_type"));
+                MonsterType monsterType = MonsterType.valueOf(resultSet.getString("monster_type"));
+                if(resultSet.getString("monster_type") != null){
+                    cards.add(new MonsterCard(id, name, damage, elementType, monsterType));
+                } else {
+                    cards.add(new SpellCard(id, name, damage, elementType));
+                }
+            }
+            pckg = new Package(oldPid, cards);
+            result.add(pckg);
+        } catch (SQLException e) {
+            logger.severe("Error : " + e.getMessage());
+        }
+        return result;
+    }
 
 
 /*
