@@ -68,22 +68,52 @@ public class PackageDaoDb {
     }
 
     public Package acquirePackage() throws SQLException {
+        // Erste Abfrage: Ein Paket löschen und die Karteninformationen abrufen
         String sql = """
         DELETE FROM packages
         WHERE pid = (SELECT MIN(pid) FROM packages)
         RETURNING pid, cid
     """;
 
+        // Zweite Abfrage: Details zu den Karten aus der Tabelle `card` laden
+        String cardDetailsSql = """
+        SELECT cid, name, damage, element_type, monster_type
+        FROM card
+        WHERE cid = ?
+    """;
+
         Map<Integer, List<Card>> packageMap = new HashMap<>();
 
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
+
+            // Karteninformationen sammeln
             while (rs.next()) {
                 int packageId = rs.getInt("pid");
                 String cardId = rs.getString("cid");
 
-                Card card = getCardById(cardId);
-                packageMap.computeIfAbsent(packageId, k -> new ArrayList<>()).add(card);
+                // Karte aus der Tabelle `card` abrufen
+                try (PreparedStatement cardStmt = DbConnection.getInstance().prepareStatement(cardDetailsSql)) {
+                    cardStmt.setString(1, cardId);
+                    ResultSet cardRs = cardStmt.executeQuery();
+
+                    if (cardRs.next()) {
+                        String name = cardRs.getString("name");
+                        double damage = cardRs.getDouble("damage");
+                        ElementType elementType = ElementType.valueOf(cardRs.getString("element_type"));
+                        MonsterType monsterType = cardRs.getString("monster_type") != null
+                                ? MonsterType.valueOf(cardRs.getString("monster_type"))
+                                : null;
+
+                        Card card = monsterType != null
+                                ? new MonsterCard(cardId, name, damage, elementType, monsterType)
+                                : new SpellCard(cardId, name, damage, elementType);
+
+                        packageMap.computeIfAbsent(packageId, k -> new ArrayList<>()).add(card);
+                    } else {
+                        throw new SQLException("Card not found for ID: " + cardId);
+                    }
+                }
             }
         }
 
@@ -91,34 +121,9 @@ public class PackageDaoDb {
             return null; // Kein Paket verfügbar
         }
 
+        // Das erste (älteste) Paket zurückgeben
         int packageId = packageMap.keySet().iterator().next();
         return new Package(packageId, packageMap.get(packageId));
-    }
-
-    private Card getCardById(String cardId) throws SQLException {
-        String sql = """
-        SELECT cid, name, damage, element_type, monster_type
-        FROM card
-        WHERE cid = ?
-    """;
-
-        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
-            stmt.setString(1, cardId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String name = rs.getString("name");
-                double damage = rs.getDouble("damage");
-                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
-                MonsterType monsterType = rs.getString("monster_type") != null
-                        ? MonsterType.valueOf(rs.getString("monster_type"))
-                        : null;
-
-                return monsterType != null
-                        ? new MonsterCard(cardId, name, damage, elementType, monsterType)
-                        : new SpellCard(cardId, name, damage, elementType);
-            }
-        }
-        return null;
     }
 
     public Collection<Package> getAll() {

@@ -32,7 +32,7 @@ public class DbConnection implements Closeable {
                        name VARCHAR(255) NOT NULL,
                        damage DOUBLE precision NOT NULL,
                        element_type VARCHAR(50) NOT NULL,
-                      monster_type VARCHAR(50)
+                       monster_type VARCHAR(50)
                     );
                     CREATE TABLE IF NOT EXISTS packages (
                         pid SERIAL NOT NULL,

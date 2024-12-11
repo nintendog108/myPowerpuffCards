@@ -13,6 +13,5 @@ public enum ElementType {
         } else {
             return NORMAL;
         }
-        // weiter - normal steht regular
     }
 }

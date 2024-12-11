@@ -15,7 +15,7 @@ public class User {
     private String username;
     @JsonProperty("Password")
     private String password;
-    private int coins;
+    private int coins = 20;
     private Stack stack;
     private Deck deck;
     private int ELO;
@@ -89,7 +89,7 @@ public class User {
     }
 
     public void setCoins(int coins) {
-        this.coins = 20;
+        this.coins = coins;
     }
 
     public int getELO() {

@@ -207,28 +207,28 @@ public class UsersDaoDb implements Dao<User> {
         return null;
     }
 
-    @Override
     public void update(User user, String[] params) {
         user.setUsername(Objects.requireNonNull(params[0], "Username cannot be null"));
         user.setPassword(Objects.requireNonNull(params[1], "Password cannot be null"));
         user.setToken(Objects.requireNonNull(params[2], "Token cannot be null"));
-        //user.setCoins(Integer.parseInt(Objects.requireNonNull(params[3], "Coins cannot be null")));
 
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-                UPDATE users
-                SET username = ?, password = ?, token = ?, coins = 15
-                WHERE uid = ?;
-                """)
+            UPDATE users
+            SET username = ?, password = ?, token = ?, coins = ?
+            WHERE uid = ?;
+            """)
         ) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
             statement.setString(3, user.getToken());
-            statement.setInt(4, user.getId()); // Use the user's stored ID
-            statement.execute();
+            statement.setInt(4, user.getCoins()); // Hier werden die Coins korrekt gesetzt
+            statement.setInt(5, user.getId());    // Benutzer-ID setzen
+            statement.executeUpdate();           // Verwende executeUpdate() für UPDATE-Statements
         } catch (SQLException e) {
             logger.severe("Error updating user: " + e.getMessage());
         }
     }
+
 
     @Override
     public void delete(User user) {

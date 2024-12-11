@@ -40,7 +40,7 @@ public class PackageController extends Controller {
                 if (path.equals("/packages")) {
                     createPackage(body, out);
                 }else if (path.equals("/transactions/packages")){
-                    acquirePackage(headers, out);
+                    acquirePackageController(headers, out);
                 } else {
                     sendNotFound(out);
                 }
@@ -99,7 +99,7 @@ public class PackageController extends Controller {
         out.flush();
     }
 */
-   public void acquirePackage(Map<String, String> headers, BufferedWriter out) throws IOException {
+   public void acquirePackageController(Map<String, String> headers, BufferedWriter out) throws IOException {
        try {
            // Überprüfe Authentifizierung
            if (!authService.authenticate(headers)) {
@@ -130,13 +130,11 @@ public class PackageController extends Controller {
            }
 
            // Paket erwerben
-           Collection<Package> packages = packageDao.getAll();
-           if (packages.isEmpty()) {
+           Package randomPackage = packageDao.acquirePackage();
+           if (randomPackage == null) { // Falls keine Pakete mehr verfügbar sind
                sendInternalError(out, "No packages available.");
                return;
            }
-
-           Package randomPackage = packages.iterator().next();
 
            // Update User und Package
            userEntity.setCoins(userEntity.getCoins() - 5);
@@ -155,10 +153,70 @@ public class PackageController extends Controller {
        } catch (IllegalArgumentException e) {
            sendBadRequest(out, e.getMessage());
        } catch (Exception e) {
+           sendBadRequest(out, "Error acquiring package: " + e.getMessage()); //TODO: hier wird noch 500 Internal error angezeigt statt 4xx
+       }
+       out.flush();
+   }
+
+    /*
+   public void acquirePackageController(Map<String, String> headers, BufferedWriter out) throws IOException {
+       try {
+           // Authentifizierung prüfen
+           if (!authService.authenticate(headers)) {
+               sendUnauthorized(out, "Unauthorized request.");
+               return;
+           }
+
+           // Benutzername extrahieren
+           String authorization = headers.get("Authorization");
+           if (authorization == null || !authorization.startsWith("Bearer ")) {
+               sendBadRequest(out, "Invalid Authorization header.");
+               return;
+           }
+           String username = authorization.substring("Bearer ".length()).split("-")[0];
+
+           Optional<User> user = usersDao.getText(username);
+
+           if (user.isEmpty()) {
+               sendBadRequest(out, "User not found.");
+               return;
+           }
+
+           // Überprüfen, ob der Benutzer genug Coins hat
+           User userEntity = user.get();
+           if (userEntity.getCoins() < 5) {
+               sendBadRequest(out, "Not enough money.");
+               return;
+           }
+
+           // Paket erwerben (verwende acquirePackage anstelle von getAll)
+           Package acquiredPackage = packageDao.acquirePackage();
+           if (acquiredPackage == null) {
+               sendInternalError(out, "No packages available.");
+               return;
+           }
+
+           // Benutzer aktualisieren
+           userEntity.setCoins(userEntity.getCoins() - 5);
+           usersDao.update(userEntity, new String[]{
+                   userEntity.getUsername(),
+                   userEntity.getPassword(),
+                   userEntity.getToken()
+           });
+
+           // Erfolgsmeldung senden
+           out.write("HTTP/1.1 201 Created\r\n");
+           out.write("Content-Type: application/json\r\n");
+           out.write("\r\n");
+           out.write("{\"message\":\"Package acquired successfully\", \"packageId\": " + acquiredPackage.getId() + "}");
+       } catch (IllegalArgumentException e) {
+           sendBadRequest(out, e.getMessage());
+       } catch (Exception e) {
            sendInternalError(out, "Error acquiring package: " + e.getMessage());
        }
        out.flush();
    }
+*/
 
 
     private void createPackage(String body, BufferedWriter out) throws IOException {
