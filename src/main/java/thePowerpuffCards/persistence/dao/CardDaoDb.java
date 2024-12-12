@@ -1,11 +1,15 @@
 package thePowerpuffCards.persistence.dao;
 
+import thePowerpuffCards.core.models.cards.ElementType;
 import thePowerpuffCards.core.models.cards.monster.MonsterType;
+import thePowerpuffCards.core.models.cards.spell.SpellCard;
 import thePowerpuffCards.persistence.DbConnection;
 import thePowerpuffCards.core.models.cards.Card;
 import thePowerpuffCards.core.models.cards.monster.MonsterCard;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class CardDaoDb {
@@ -39,6 +43,35 @@ public class CardDaoDb {
             logger.severe("Fehler beim Speichern der Karte: " + e.getMessage());
         }
     }
+    /*
+    public List<Card> acquireCards() {
+        List<Card> cards = new ArrayList<>();
+        String sql = "SELECT * FROM card LIMIT 5";
 
+        try (Statement stmt = DbConnection.getInstance().prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery(sql)) {
 
+            while (rs.next()) {
+                String id = rs.getString("cid");
+                String name = rs.getString("name");
+                double damage = rs.getDouble("damage");
+                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
+                String monsterTypeStr = rs.getString("monster_type");
+
+                Card card;
+                if (monsterTypeStr != null) {
+                    MonsterType monsterType = MonsterType.valueOf(monsterTypeStr);
+                    card = new MonsterCard(id, name, damage, elementType, monsterType);
+                } else {
+                    card = new SpellCard(id, name, damage, elementType);
+                }
+                cards.add(card);
+            }
+        } catch (SQLException e) {
+            logger.severe("Fehler beim Abrufen der Karten: " + e.getMessage());
+        }
+        return cards;
+    }
+}
+*/
 }

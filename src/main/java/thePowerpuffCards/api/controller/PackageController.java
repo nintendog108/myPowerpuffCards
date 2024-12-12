@@ -42,7 +42,7 @@ public class PackageController extends Controller {
                 }else if (path.equals("/transactions/packages")){
                     acquirePackageController(headers, out);
                 } else {
-                    sendNotFound(out);
+                    sendNotFound(out, "Something went wrong");
                 }
                 break;
             default:
@@ -132,7 +132,7 @@ public class PackageController extends Controller {
            // Paket erwerben
            Package randomPackage = packageDao.acquirePackage();
            if (randomPackage == null) { // Falls keine Pakete mehr verfügbar sind
-               sendInternalError(out, "No packages available.");
+               sendNotFound(out, "No packages available.");
                return;
            }
 
@@ -288,7 +288,7 @@ public class PackageController extends Controller {
         out.write(message);
     }
 
-    private void sendNotFound(BufferedWriter out) throws IOException {
+    private void sendNotFound(BufferedWriter out,  String message) throws IOException {
         out.write("HTTP/1.1 404 Not Found\r\n");
         out.write("Content-Type: text/plain\r\n");
         out.write("\r\n");
