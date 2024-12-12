@@ -26,12 +26,13 @@ public class Router {
         UserController userController = new UserController(usersDao);
         SessionController sessionController = new SessionController(usersDao);
         PackageController packageController = new PackageController(cardDao, packageDao, usersDao, authService, transDao);
-
+        CardController cardController = new CardController(usersDao);
         // routes
         routes.put("/users", userController);
         routes.put("/sessions", sessionController);
         routes.put("/packages", packageController);
         routes.put("/transactions", packageController);
+        routes.put("/cards", cardController);
     }
     public Controller getController(String route) {
         for (Map.Entry<String, Controller> entry : routes.entrySet()) {

@@ -2,6 +2,10 @@ package thePowerpuffCards.persistence.dao;
 
 import thePowerpuffCards.core.models.User;
 import thePowerpuffCards.core.models.cards.Card;
+import thePowerpuffCards.core.models.cards.ElementType;
+import thePowerpuffCards.core.models.cards.monster.MonsterCard;
+import thePowerpuffCards.core.models.cards.monster.MonsterType;
+import thePowerpuffCards.core.models.cards.spell.SpellCard;
 import thePowerpuffCards.persistence.DbConnection;
 
 import java.sql.PreparedStatement;
@@ -254,5 +258,42 @@ public class UsersDaoDb implements Dao<User> {
             logger.severe("Error adding session for user: " + e.getMessage());
         }
     }
+
+    public List<Card> getCardsFromStack(String username) {
+        String sql = """
+        SELECT card.cid, card.name, card.damage, card.element_type, card.monster_type
+        FROM stack
+        JOIN card ON stack.cid = card.cid
+        WHERE stack.username = ?
+    """;
+
+        List<Card> cards = new ArrayList<>();
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String id = rs.getString("cid");
+                String name = rs.getString("name");
+                double damage = rs.getDouble("damage");
+                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
+                MonsterType monsterType = rs.getString("monster_type") != null
+                        ? MonsterType.valueOf(rs.getString("monster_type"))
+                        : null;
+
+                Card card = monsterType != null
+                        ? new MonsterCard(id, name, damage, elementType, monsterType)
+                        : new SpellCard(id, name, damage, elementType);
+
+                cards.add(card);
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching cards from stack for user: " + e.getMessage());
+        }
+
+        return cards;
+    }
+
 
 }

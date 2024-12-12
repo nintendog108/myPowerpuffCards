@@ -43,6 +43,25 @@ public class CardDaoDb {
             logger.severe("Fehler beim Speichern der Karte: " + e.getMessage());
         }
     }
+
+    public void addCardsToStack(String username, List<Card> cards) {
+        String sql = """
+        INSERT INTO stack (username, cid)
+        VALUES (?, ?)
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            for (Card card : cards) {
+                stmt.setString(1, username);
+                stmt.setString(2, card.getId());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            logger.severe("Error adding cards to stack for user: " + e.getMessage());
+        }
+    }
+
     /*
     public List<Card> acquireCards() {
         List<Card> cards = new ArrayList<>();
