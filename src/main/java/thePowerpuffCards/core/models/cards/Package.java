@@ -18,6 +18,9 @@ public class Package {
             throw new IllegalArgumentException("Nicht genügend Karten verfügbar, um ein Paket zu erstellen.");
         }
     }
+    public Package() {
+        this.cards = new ArrayList<>();
+    }
 
     public Package(int id, List<Card> cards) {
         this.id = id;

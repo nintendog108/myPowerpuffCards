@@ -1,6 +1,7 @@
 package thePowerpuffCards.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import thePowerpuffCards.core.models.User;
 import thePowerpuffCards.core.models.cards.Card;
 import thePowerpuffCards.persistence.dao.UsersDaoDb;
@@ -13,7 +14,8 @@ import java.util.Optional;
 
 public class CardController extends Controller {
     private final UsersDaoDb usersDao;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 
     public CardController(UsersDaoDb usersDao) {
