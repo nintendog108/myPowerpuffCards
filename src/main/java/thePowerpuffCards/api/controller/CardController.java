@@ -28,10 +28,14 @@ public class CardController extends Controller {
     public void handleRequest(String method, String path, Map<String, String> headers, String body, BufferedWriter out) throws IOException {
         if ("GET".equalsIgnoreCase(method) && "/cards".equals(path)) {
             showAllCards(headers, out);
-        } else if ("GET".equalsIgnoreCase(method) && "/deck".equals(path)) {
-            showDeck(headers, out); // Neuer Endpunkt: Deck anzeigen
+        } else if ("GET".equalsIgnoreCase(method) && path.startsWith("/deck")) {
+            String query = null;
+            if (path.contains("?")) {
+                query = path.substring(path.indexOf("?") + 1);
+            }
+            showDeck(headers, out, query);
         } else if ("POST".equalsIgnoreCase(method) && "/deck".equals(path)) {
-            defineDeck(headers, body, out); // Neuer Endpunkt: Deck definieren
+            defineDeck(headers, body, out);
         } else if ("PUT".equalsIgnoreCase(method) && "/deck".equals(path)) {
             configureDeck(headers, body, out);
         } else {
@@ -109,21 +113,36 @@ public class CardController extends Controller {
     }
 
 
-    private void showDeck(Map<String, String> headers, BufferedWriter out) throws IOException {
+    private void showDeck(Map<String, String> headers, BufferedWriter out, String query) throws IOException {
         String username = getUsernameFromHeaders(headers);
         if (username == null) {
             sendUnauthorized(out, "Invalid token.");
             return;
         }
 
-        List<Card> deck = usersDao.getDeck(username); // Deck aus der Datenbank abrufen
+        List<Card> deck = usersDao.getDeck(username); // deck aus der Datenbank abrufen
         if (deck.isEmpty()) {
-            sendOk(out, "[]"); // Leeres Deck zurückgeben
+            sendOk(out, "[]");
+            return;
+        }
+
+        // übberprüfen, ob der query-param auf format=plain gesetzt ist für curl 13
+        if (query != null && query.contains("format=plain")) {
+            StringBuilder plainDeck = new StringBuilder("Deck:\n");
+            for (Card card : deck) {
+                plainDeck.append("Name: ").append(card.getName())
+                        .append(", Damage: ").append(card.getDamage())
+                        .append(", Element: ").append(card.getElementType())
+                        .append("\n");
+            }
+            sendOk(out, plainDeck.toString());
         } else {
+            // Standard: JSON-Format zurückgeben
             String jsonResponse = objectMapper.writeValueAsString(deck);
             sendOk(out, jsonResponse);
         }
     }
+
 
     private void showAllCards(Map<String, String> headers, BufferedWriter out) throws IOException {
         String authorization = headers.get("Authorization");
@@ -147,7 +166,7 @@ public class CardController extends Controller {
             return;
         }
 
-        // Karten als JSON serialisieren
+        // Karten als json serialisieren
         String jsonResponse = objectMapper.writeValueAsString(cards);
 
         sendOk(out, jsonResponse);
