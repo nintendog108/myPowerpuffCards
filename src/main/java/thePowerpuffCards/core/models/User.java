@@ -43,33 +43,6 @@ public class User {
         this.id = id;
     }
 
-    // Methoden zum Hinzufügen und Definieren des Decks
-    public void addCardsToStack(List<Card> newCards) {
-        for (Card card : newCards) {
-            stack.addCard(card);
-        }
-        System.out.println(" Just added " + newCards.size() + " new cards to the stack.");
-    }
-
-    public void defineDeck(List<Card> selectedCards) {
-        if (selectedCards.size() != 4) {
-            throw new IllegalArgumentException("Deck must consist of exactly 4 cards.");
-        }
-
-        for (Card card : selectedCards) {
-            if (!stack.getCards().contains(card)) {
-                throw new IllegalArgumentException("Card " + card.getName() + " is not in the stack.");
-            }
-        }
-        deck.defineDeck(selectedCards);
-        System.out.println("Deck defined with 4 cards.");
-    }
-
-    // Automatische Deck-Auswahl
-    public void autoSelectBestDeck() {
-        deck.selectBestCardsFromCollection(stack.getCards());
-        System.out.println("Deck magically defined with the 4 best cards.");
-    }
 
     // Getter und Setter für andere Eigenschaften
     public Stack getStack() {

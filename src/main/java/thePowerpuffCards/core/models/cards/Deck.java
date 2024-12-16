@@ -1,5 +1,7 @@
 package thePowerpuffCards.core.models.cards;
 
+import thePowerpuffCards.persistence.dao.UsersDaoDb;
+
 import java.util.List;
 
 public class Deck extends CardPile {
@@ -8,11 +10,14 @@ public class Deck extends CardPile {
         super();
     }
 
-    public void defineDeck(List<Card> selectedCards) {
+    public void defineDeck(List<Card> selectedCards, String username, UsersDaoDb usersDao) {
         if (selectedCards.size() != 4) {
             throw new IllegalArgumentException("A deck must consist of exactly 4 cards.");
         }
+
         this.cards = selectedCards;
+        usersDao.clearDeck(username);
+        usersDao.saveDeck(username, selectedCards);
     }
 
 

@@ -294,6 +294,71 @@ public class UsersDaoDb implements Dao<User> {
 
         return cards;
     }
+    public void saveDeck(String username, List<Card> deck) {
+        String sql = """
+        INSERT INTO deck (username, cid, deck_slot)
+        VALUES (?, ?, ?)
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            for (int i = 0; i < deck.size(); i++) {
+                stmt.setString(1, username);
+                stmt.setString(2, deck.get(i).getId());
+                stmt.setInt(3, i);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            logger.severe("Error saving deck: " + e.getMessage());
+        }
+    }
+
+    public List<Card> getDeck(String username) {
+        String sql = """
+        SELECT card.cid, card.name, card.damage, card.element_type, card.monster_type
+        FROM deck
+        JOIN card ON deck.cid = card.cid
+        WHERE deck.username = ?
+        ORDER BY deck.deck_slot
+    """;
+
+        List<Card> deck = new ArrayList<>();
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String id = rs.getString("cid");
+                String name = rs.getString("name");
+                double damage = rs.getDouble("damage");
+                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
+                MonsterType monsterType = rs.getString("monster_type") != null
+                        ? MonsterType.valueOf(rs.getString("monster_type"))
+                        : null;
+
+                Card card = monsterType != null
+                        ? new MonsterCard(id, name, damage, elementType, monsterType)
+                        : new SpellCard(id, name, damage, elementType);
+
+                deck.add(card);
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching deck: " + e.getMessage());
+        }
+        return deck;
+    }
+
+    public void clearDeck(String username) {
+        String sql = """
+        DELETE FROM deck WHERE username = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error clearing deck: " + e.getMessage());
+        }
+    }
 
 
 }

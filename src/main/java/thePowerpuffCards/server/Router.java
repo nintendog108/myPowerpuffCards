@@ -33,6 +33,7 @@ public class Router {
         routes.put("/packages", packageController);
         routes.put("/transactions", packageController);
         routes.put("/cards", cardController);
+        routes.put("/deck", cardController);
     }
     public Controller getController(String route) {
         for (Map.Entry<String, Controller> entry : routes.entrySet()) {
