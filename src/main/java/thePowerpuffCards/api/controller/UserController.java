@@ -7,6 +7,7 @@ import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -39,10 +40,32 @@ public class UserController extends Controller {
             }
         } else if(("GET".equalsIgnoreCase(method) && "/stats".equals(path))) {
             showStats(headers, out);
+        } else  if ("GET".equalsIgnoreCase(method) && "/scoreboard".equals(path)) {
+            showScoreboard(headers, out);
         }
         else {
             sendNotFound(out);
         }
+    }
+    private void showScoreboard(Map<String, String> headers, BufferedWriter out) throws IOException {
+        String username = getUsernameFromHeaders(headers);
+        if (username == null) {
+            sendUnauthorized(out, "Invalid token.");
+            return;
+        }
+
+        List<Map<String, Object>> scoreboard = usersDao.getScoreboard();
+        if (!scoreboard.isEmpty()) {
+            logScoreboard(scoreboard);
+            String jsonResponse = objectMapper.writeValueAsString(scoreboard);
+            out.write("HTTP/1.1 200 OK\r\n");
+            out.write("Content-Type: application/json\r\n");
+            out.write("\r\n");
+            out.write(jsonResponse);
+        } else {
+            sendNotFound(out);
+        }
+        out.flush();
     }
     private void showStats(Map<String, String> headers, BufferedWriter out) throws IOException {
         String username = getUsernameFromHeaders(headers);
@@ -168,4 +191,22 @@ public class UserController extends Controller {
         out.write(message);
         out.flush();
     }
+    private void logScoreboard(List<Map<String, Object>> scoreboard) {
+        System.out.println("=== SCOREBOARD ===");
+        System.out.printf("%-5s %-15s %-15s %-10s %-10s %-5s%n",
+                "Rank", "Username", "Games Played", "Games Won", "Games Lost", "ELO");
+        System.out.println("------------------------------------------------------------");
+        for (Map<String, Object> entry : scoreboard) {
+            System.out.printf("%-5d %-15s %-15d %-10d %-10d %-5d%n",
+                    entry.get("Rank"),
+                    entry.get("Username"),
+                    entry.get("GamesPlayed"),
+                    entry.get("GamesWon"),
+                    entry.get("GamesLost"),
+                    entry.get("ELO")
+            );
+        }
+        System.out.println("===================");
+    }
+
 }

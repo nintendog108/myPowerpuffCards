@@ -418,6 +418,32 @@ public class UsersDaoDb implements Dao<User> {
         }
         return Optional.empty();
     }
+    public List<Map<String, Object>> getScoreboard() {
+        String sql = """
+        SELECT username, games_played, games_won, games_lost, elo
+        FROM stats
+        ORDER BY elo DESC
+    """;
+
+        List<Map<String, Object>> scoreboard = new ArrayList<>();
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            int rank = 1;
+            while (rs.next()) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("Rank", rank++);
+                entry.put("Username", rs.getString("username"));
+                entry.put("GamesPlayed", rs.getInt("games_played"));
+                entry.put("GamesWon", rs.getInt("games_won"));
+                entry.put("GamesLost", rs.getInt("games_lost"));
+                entry.put("ELO", rs.getInt("elo"));
+                scoreboard.add(entry);
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching scoreboard: " + e.getMessage());
+        }
+        return scoreboard;
+    }
 
 
 }
