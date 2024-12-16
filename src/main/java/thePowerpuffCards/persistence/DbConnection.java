@@ -54,6 +54,13 @@ public class DbConnection implements Closeable {
                         FOREIGN KEY (cid) REFERENCES card(cid),
                         PRIMARY KEY (username, deck_slot)
                     );
+                    CREATE TABLE IF NOT EXISTS userprofile (
+                        username VARCHAR(255) PRIMARY KEY,
+                        name VARCHAR(255),
+                        bio TEXT,
+                        image TEXT,
+                        FOREIGN KEY (username) REFERENCES users(username)
+                    );
                     """;
             executeSql(connection, sql);
         } catch (SQLException exception) {

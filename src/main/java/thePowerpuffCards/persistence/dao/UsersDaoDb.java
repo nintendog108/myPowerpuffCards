@@ -233,6 +233,42 @@ public class UsersDaoDb implements Dao<User> {
         }
     }
 
+    public void updateUserProfile(String username, String name, String bio, String image) {
+        String sql = """
+        INSERT INTO userprofile (username, name, bio, image)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT (username) DO UPDATE 
+        SET name = EXCLUDED.name, bio = EXCLUDED.bio, image = EXCLUDED.image;
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, name);
+            stmt.setString(3, bio);
+            stmt.setString(4, image);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error updating user profile: " + e.getMessage());
+        }
+    }
+
+    public Optional<Map<String, String>> getUserProfile(String username) {
+        String sql = "SELECT name, bio, image FROM userprofile WHERE username = ?";
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Map<String, String> profile = new HashMap<>();
+                profile.put("Name", rs.getString("name"));
+                profile.put("Bio", rs.getString("bio"));
+                profile.put("Image", rs.getString("image"));
+                return Optional.of(profile);
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching user profile: " + e.getMessage());
+        }
+        return Optional.empty();
+    }
 
     @Override
     public void delete(User user) {
