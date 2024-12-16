@@ -395,6 +395,29 @@ public class UsersDaoDb implements Dao<User> {
             logger.severe("Error clearing deck: " + e.getMessage());
         }
     }
+    public Optional<Map<String, Integer>> getUserStats(String username) {
+        String sql = """
+        SELECT games_played, games_won, games_lost, elo
+        FROM stats
+        WHERE username = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Map<String, Integer> stats = new HashMap<>();
+                stats.put("GamesPlayed", rs.getInt("games_played"));
+                stats.put("GamesWon", rs.getInt("games_won"));
+                stats.put("GamesLost", rs.getInt("games_lost"));
+                stats.put("ELO", rs.getInt("elo"));
+                return Optional.of(stats);
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching stats for user " + username + ": " + e.getMessage());
+        }
+        return Optional.empty();
+    }
 
 
 }

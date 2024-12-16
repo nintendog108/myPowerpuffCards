@@ -34,6 +34,7 @@ public class Router {
         routes.put("/transactions", packageController);
         routes.put("/cards", cardController);
         routes.put("/deck", cardController);
+        routes.put("/stats", userController);
     }
     public Controller getController(String route) {
         for (Map.Entry<String, Controller> entry : routes.entrySet()) {

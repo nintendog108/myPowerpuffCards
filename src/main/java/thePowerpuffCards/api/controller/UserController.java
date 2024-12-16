@@ -37,11 +37,32 @@ public class UserController extends Controller {
             } else {
                 sendMethodNotAllowed(out);
             }
-        } else {
+        } else if(("GET".equalsIgnoreCase(method) && "/stats".equals(path))) {
+            showStats(headers, out);
+        }
+        else {
             sendNotFound(out);
         }
     }
+    private void showStats(Map<String, String> headers, BufferedWriter out) throws IOException {
+        String username = getUsernameFromHeaders(headers);
+        if (username == null) {
+            sendUnauthorized(out, "Invalid token.");
+            return;
+        }
 
+        Optional<Map<String, Integer>> stats = usersDao.getUserStats(username);
+        if (stats.isPresent()) {
+            String jsonResponse = objectMapper.writeValueAsString(stats.get());
+            out.write("HTTP/1.1 200 OK\r\n");
+            out.write("Content-Type: application/json\r\n");
+            out.write("\r\n");
+            out.write(jsonResponse);
+        } else {
+            sendNotFound(out);
+        }
+        out.flush();
+    }
 
     private void registerUser(String body, BufferedWriter out) throws IOException {
         User newUser = objectMapper.readValue(body, User.class);

@@ -61,6 +61,14 @@ public class DbConnection implements Closeable {
                         image TEXT,
                         FOREIGN KEY (username) REFERENCES users(username)
                     );
+                    CREATE TABLE IF NOT EXISTS stats (
+                        username VARCHAR(255) PRIMARY KEY,
+                        games_played INT DEFAULT 0,
+                        games_won INT DEFAULT 0,
+                        games_lost INT DEFAULT 0,
+                        elo INT DEFAULT 100,
+                        FOREIGN KEY (username) REFERENCES users(username)
+                    );
                     """;
             executeSql(connection, sql);
         } catch (SQLException exception) {
