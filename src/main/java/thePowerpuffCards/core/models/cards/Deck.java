@@ -21,10 +21,6 @@ public class Deck extends CardPile {
     }
 
 
-    public boolean isValidDeck() {
-        return this.cards.size() == 4;
-    }
-
     public void selectBestCardsFromCollection(List<Card> collection) {
         if (collection.size() < 4) {
             throw new IllegalArgumentException("Not enough cards in the collection to build a deck.");

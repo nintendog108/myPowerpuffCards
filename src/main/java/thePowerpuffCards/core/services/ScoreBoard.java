@@ -1,5 +1,5 @@
 package thePowerpuffCards.core.services;
-
+/*
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,3 +32,4 @@ public class ScoreBoard {
                 .forEach(entry -> System.out.println("User: " + entry.getKey() + " - ELO: " + entry.getValue()));
     }
 }
+*/

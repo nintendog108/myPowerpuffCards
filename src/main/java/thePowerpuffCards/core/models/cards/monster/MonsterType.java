@@ -7,56 +7,26 @@ public enum MonsterType {
     ORK(25),
     KNIGHT(40),
     KRAKEN(60);
-//wie beim spell
 
+    private final int baseDamage;
 
-    private final double damage;
-
-    MonsterType(double damage) {
-
-        this.damage = damage;
+    MonsterType(int baseDamage) {
+        this.baseDamage = baseDamage;
     }
 
-    public double getDamage() {
+    public int getBaseDamage() {
+        return baseDamage;
+    }
 
-        return damage;
-    }
-/*
-    public static MonsterType getMonsterType(String Name) {
-        if (Name.contains("GOBLIN")) {
-            return GOBLIN;
-        } else if (Name.contains("DRAGON")) {
-            return DRAGON;
-        } else if (Name.contains("WIZARD")) {
-            return WIZARD;
-        } else if (Name.contains("ORK")) {
-            return ORK;
-        } else if (Name.contains("KNIGHT")) {
-            return KNIGHT;
-        } else if (Name.contains("KRAKEN")) {
-            return KRAKEN;
-        }
-        return null;
-    }
-*/
     public static MonsterType getMonsterType(String name) {
-        if (name == null || name.isEmpty()) {
-            return null;
-        }
-        if (name.toLowerCase().contains("dragon")) {
-            return DRAGON;
-        } else if (name.toLowerCase().contains("goblin")) {
-            return GOBLIN;
-        } else if (name.toLowerCase().contains("orc")) {
-            return ORK;
-        } else if (name.toLowerCase().contains("knight")) {
-            return KNIGHT;
-        } else if (name.toLowerCase().contains("kraken")) {
-            return KRAKEN;
-        } else if (name.toLowerCase().contains("wizard")) {
-            return WIZARD;
+        name = name.toLowerCase();
+        for (MonsterType type : values()) {
+            if (name.contains(type.name().toLowerCase())) {
+                return type;
+            }
         }
         return null;
     }
 }
+
 

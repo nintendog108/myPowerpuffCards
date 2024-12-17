@@ -36,6 +36,7 @@ public class Router {
         routes.put("/deck", cardController);
         routes.put("/stats", userController);
         routes.put("/scoreboard", userController);
+        routes.put("/battles", userController);
     }
     public Controller getController(String route) {
         for (Map.Entry<String, Controller> entry : routes.entrySet()) {

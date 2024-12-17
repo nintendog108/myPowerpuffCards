@@ -153,36 +153,8 @@ public class UsersDaoDb implements Dao<User> {
         }
     }
 
-    public void updateUser(User user) {
-        String sql = """
-        UPDATE users
-        SET coins = ?
-        WHERE uid = ?
-    """;
 
-        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
-            stmt.setInt(1, user.getCoins());
-            stmt.setInt(2, user.getId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            logger.severe("Error updating user: " + e.getMessage());
-        }
-    }
 
-    public void addCardToUser(User user, Card card) {
-        String sql = """
-        INSERT INTO user_cards (uid, cid)
-        VALUES (?, ?);
-    """;
-
-        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
-            stmt.setInt(1, user.getId());
-            stmt.setString(2, card.getId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            logger.severe("Error adding card to user: " + e.getMessage());
-        }
-    }
 
 
     public User getUserByToken(String token) {
@@ -362,18 +334,30 @@ public class UsersDaoDb implements Dao<User> {
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
+
             while (rs.next()) {
                 String id = rs.getString("cid");
                 String name = rs.getString("name");
                 double damage = rs.getDouble("damage");
-                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
-                MonsterType monsterType = rs.getString("monster_type") != null
-                        ? MonsterType.valueOf(rs.getString("monster_type"))
-                        : null;
+                String rawElementType = rs.getString("element_type");
 
-                Card card = monsterType != null
-                        ? new MonsterCard(id, name, damage, elementType, monsterType)
-                        : new SpellCard(id, name, damage, elementType);
+                // Debug-Ausgabe für element_type
+                System.out.println("Raw element_type from DB: " + rawElementType);
+
+                ElementType elementType = ElementType.getType(rawElementType);
+
+                // Debug-Ausgabe für konvertiertes ElementType
+                System.out.println("Converted ElementType: " + elementType);
+
+                String monsterTypeStr = rs.getString("monster_type");
+                MonsterType monsterType = monsterTypeStr != null ? MonsterType.valueOf(monsterTypeStr) : null;
+
+                Card card;
+                if (monsterType != null) {
+                    card = new MonsterCard(id, name, damage, elementType, monsterType);
+                } else {
+                    card = new SpellCard(id, name, damage, elementType);
+                }
 
                 deck.add(card);
             }
@@ -382,6 +366,7 @@ public class UsersDaoDb implements Dao<User> {
         }
         return deck;
     }
+
 
     public void clearDeck(String username) {
         String sql = """
@@ -444,6 +429,87 @@ public class UsersDaoDb implements Dao<User> {
         }
         return scoreboard;
     }
+    public void incrementGamesPlayed(String username) {
+        String sql = """
+        UPDATE stats
+        SET games_played = games_played + 1
+        WHERE username = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error incrementing games played for user: " + username + " - " + e.getMessage());
+        }
+    }
+    public void incrementGamesWon(String username) {
+        String sql = """
+        UPDATE stats
+        SET games_won = games_won + 1
+        WHERE username = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error incrementing games won for user: " + username + " - " + e.getMessage());
+        }
+    }
+    public void incrementGamesLost(String username) {
+        String sql = """
+        UPDATE stats
+        SET games_lost = games_lost + 1
+        WHERE username = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error incrementing games lost for user: " + username + " - " + e.getMessage());
+        }
+    }
+    public void updateElo(String username, int eloChange) {
+        String sql = """
+        UPDATE stats
+        SET elo = elo + ?
+        WHERE username = ?
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setInt(1, eloChange);
+            stmt.setString(2, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error updating ELO for user: " + username + " - " + e.getMessage());
+        }
+    }
+
+    public String getRandomOpponent(String currentUser) {
+        String sql = """
+        SELECT username 
+        FROM deck 
+        WHERE username != ? 
+        GROUP BY username
+        HAVING COUNT(*) = 4
+        ORDER BY RANDOM() 
+        LIMIT 1;
+    """;
+
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, currentUser);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching random opponent: " + e.getMessage());
+        }
+        return null;
+    }
+
 
 
 }
