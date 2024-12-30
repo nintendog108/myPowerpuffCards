@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import thePowerpuffCards.api.controller.PackageController;
-import thePowerpuffCards.core.models.cards.Card;
 import thePowerpuffCards.persistence.dao.PackageDaoDb;
 import thePowerpuffCards.persistence.dao.UsersDaoDb;
 import thePowerpuffCards.persistence.dao.TransactionDaoDb;
@@ -17,7 +16,6 @@ import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -39,7 +37,7 @@ public class PackageControllerTest {
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        packageController = new PackageController(null, packageDao, usersDao, authService, transDao);
+        packageController = new PackageController(packageDao, usersDao, authService, transDao);
         stringWriter = new StringWriter();
         out = new BufferedWriter(stringWriter);
     }

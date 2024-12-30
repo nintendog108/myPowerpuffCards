@@ -52,19 +52,6 @@ public class SessionController extends Controller {
         out.flush();
     }
 
-    private void sendNotFound(BufferedWriter out) throws IOException {
-        out.write("HTTP/1.1 404 Not Found\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write("404 - Not Found");
-        out.flush();
-    }
 
-    private void sendMethodNotAllowed(BufferedWriter out) throws IOException {
-        out.write("HTTP/1.1 405 Method Not Allowed\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write("405 - Method Not Allowed");
-        out.flush();
-    }
+
 }

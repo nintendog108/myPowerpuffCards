@@ -1,16 +1,23 @@
 package thePowerpuffCards.core.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import thePowerpuffCards.core.models.cards.Card;
 import thePowerpuffCards.core.models.cards.Stack;
 import thePowerpuffCards.core.models.cards.monster.MonsterCard;
 import thePowerpuffCards.core.models.cards.spell.SpellCard;
+import thePowerpuffCards.persistence.dao.CardDaoDb;
+import thePowerpuffCards.persistence.dao.TradeDaoDb;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class TradeService {
     private String tradeId;
     private Card offeredCard;
     private String requiredCardType;
     private int minDamage;
-    private String offeredByUser;
+    private static String offeredByUser;
 
 
     public TradeService(String tradeId, Card offeredCard, String requiredCardType, int minDamage, String offeredByUser) {
@@ -21,41 +28,54 @@ public class TradeService {
         this.offeredByUser = offeredByUser;
     }
 
+    public static TradeService fromJson(String json, String offeredByUser) throws IOException {
+        System.out.println("*************   Parsing TradeService from JSON: " + json);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> tradeData = objectMapper.readValue(json, Map.class);
 
-    public boolean validateCardForTrade(Card card) {
+        String tradeId = (String) tradeData.get("Id");
+        String cardId = (String) tradeData.get("CardToTrade");
+        String type = (String) tradeData.get("Type");
+        int minDamage = (int) tradeData.get("MinimumDamage");
+
+        System.out.println("*************   Parsed TradeService: tradeId=" + tradeId + ", cardId=" + cardId);
+
+        Card offeredCard = new CardDaoDb().getCardById(cardId);
+        if (offeredCard == null) {
+            throw new IllegalArgumentException("Card not found: " + cardId);
+        }
+
+        return new TradeService(tradeId, offeredCard, type, minDamage, offeredByUser);
+    }
+
+    public void setOfferedByUser(String offeredByUser) {
+        this.offeredByUser = offeredByUser;
+    }
+
+    public static boolean validateCardForTrade(Card card, String requiredType, int minDamage) {
         if (card.getDamage() < minDamage) {
-            return false; // karte hat zu wenig schaden
+            return false; // Card has insufficient damage
         }
 
-        if (requiredCardType.equalsIgnoreCase("Monster") && !(card instanceof MonsterCard)) {
+        if ("Monster".equalsIgnoreCase(requiredType) && !(card instanceof MonsterCard)) {
             return false;
         }
 
-        if (requiredCardType.equalsIgnoreCase("Spell") && !(card instanceof SpellCard)) {
+        if ("Spell".equalsIgnoreCase(requiredType) && !(card instanceof SpellCard)) {
             return false;
         }
 
         return true;
     }
 
-    public boolean executeTrade(Card buyerCard, Stack buyerStack, Stack sellerStack) {
-        if (!validateCardForTrade(buyerCard)) {
-            System.out.println("trade failed, you have shitty cards now.");
-            return false;
-        }
 
-        //weg vom Käuferstack und add to buyer  TODO: logic error here? hmmm
-        buyerStack.removeCard(buyerCard);
-        sellerStack.addCard(buyerCard);
 
-        sellerStack.removeCard(offeredCard);
-        buyerStack.addCard(offeredCard);
 
-        System.out.println("Trade successful!   " + offeredByUser + " traded " + offeredCard.getName() + " for " + buyerCard.getName());
-        return true;
+    // Extend TradeService
+
+    public static List<TradeService> fetchAllTrades(TradeDaoDb tradeDaoDb) {
+        return tradeDaoDb.getAllTrades();
     }
-
-
 
 
 

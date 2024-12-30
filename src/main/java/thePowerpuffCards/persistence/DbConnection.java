@@ -69,6 +69,15 @@ public class DbConnection implements Closeable {
                         elo INT DEFAULT 100,
                         FOREIGN KEY (username) REFERENCES users(username)
                     );
+                    CREATE TABLE trades (
+                        trade_id VARCHAR(255) PRIMARY KEY,
+                        offered_card_id VARCHAR(255) NOT NULL,
+                        required_type VARCHAR(50) NOT NULL,
+                        min_damage INT NOT NULL,
+                        offered_by VARCHAR(255) NOT NULL,
+                        FOREIGN KEY (offered_card_id) REFERENCES card(cid),
+                        FOREIGN KEY (offered_by) REFERENCES users(username)
+                    );
                     """;
             executeSql(connection, sql);
         } catch (SQLException exception) {
@@ -105,6 +114,8 @@ public class DbConnection implements Closeable {
                 connection = DbConnection.getInstance().connect();
                 if (connection != null) {
                     System.out.println("Database connection established.");
+                    System.out.println("*************   Database connection: " + DbConnection.getInstance().getConnection());
+                    System.out.println("Auto-commit mode: " + connection.getAutoCommit());
                 }
             } catch (SQLException e) {
                 System.err.println("Error getting connection: " + e.getMessage());

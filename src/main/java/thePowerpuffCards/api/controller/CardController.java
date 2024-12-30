@@ -42,6 +42,7 @@ public class CardController extends Controller {
             sendBadRequest(out, "Bad request");
         }
     }
+
     private void configureDeck(Map<String, String> headers, String body, BufferedWriter out) throws IOException {
         String username = getUsernameFromHeaders(headers);
         if (username == null) {
@@ -51,7 +52,8 @@ public class CardController extends Controller {
 
         try {
             // JSON-Array der Karten-IDs parsen
-            List<String> cardIds = objectMapper.readValue(body, new TypeReference<List<String>>() {});
+            List<String> cardIds = objectMapper.readValue(body, new TypeReference<>() {
+            });
 
             if (cardIds.size() != 4) {
                 throw new IllegalArgumentException("A deck must consist of exactly 4 cards.");
@@ -92,7 +94,8 @@ public class CardController extends Controller {
 
         try {
             // JSON in Card-Liste konvertieren
-            List<Card> selectedCards = objectMapper.readValue(body, new TypeReference<List<Card>>() {});
+            List<Card> selectedCards = objectMapper.readValue(body, new TypeReference<List<Card>>() {
+            });
 
             // Benutzer aus der Datenbank abrufen
             User user = usersDao.getText(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -104,6 +107,7 @@ public class CardController extends Controller {
             sendBadRequest(out, "Error defining deck: " + e.getMessage());
         }
     }
+
     private String getUsernameFromHeaders(Map<String, String> headers) {
         String authorization = headers.get("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
@@ -170,29 +174,5 @@ public class CardController extends Controller {
         String jsonResponse = objectMapper.writeValueAsString(cards);
 
         sendOk(out, jsonResponse);
-    }
-
-    private void sendOk(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 200 OK\r\n");
-        out.write("Content-Type: application/json\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
-    }
-
-    private void sendUnauthorized(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 401 Unauthorized\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
-    }
-
-    private void sendBadRequest(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 400 Bad Request\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
     }
 }

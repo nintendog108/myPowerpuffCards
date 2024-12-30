@@ -61,6 +61,41 @@ public class CardDaoDb {
             logger.severe("Error adding cards to stack for user: " + e.getMessage());
         }
     }
+    public Card getCardById(String cardId) {
+        String sql = "SELECT cid, name, damage, element_type, monster_type FROM card WHERE cid = ?";
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, cardId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String name = rs.getString("name");
+                double damage = rs.getDouble("damage");
+                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
+                String monsterTypeStr = rs.getString("monster_type");
+
+                if (monsterTypeStr != null) {
+                    MonsterType monsterType = MonsterType.valueOf(monsterTypeStr);
+                    return new MonsterCard(cardId, name, damage, elementType, monsterType);
+                } else {
+                    return new SpellCard(cardId, name, damage, elementType);
+                }
+            }
+        } catch (SQLException e) {
+            logger.severe("Error fetching card by ID: " + e.getMessage());
+        }
+        return null;
+    }
+    public void transferCard(String cardId, String fromUser, String toUser) throws SQLException {
+        String sql = "UPDATE stack SET username = ? WHERE cid = ? AND username = ?";
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, toUser);
+            stmt.setString(2, cardId);
+            stmt.setString(3, fromUser);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw new SQLException("Card transfer failed.");
+            }
+        }
+    }
 
     /*
     public List<Card> acquireCards() {

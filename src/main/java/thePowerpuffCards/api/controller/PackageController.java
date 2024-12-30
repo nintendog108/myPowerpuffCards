@@ -27,7 +27,7 @@ public class PackageController extends Controller {
     private final TransactionDaoDb transDao;
 
 
-    public PackageController(CardDaoDb cardDao, PackageDaoDb packageDao, UsersDaoDb usersDao, AuthService authService, TransactionDaoDb transDao) {
+    public PackageController(PackageDaoDb packageDao, UsersDaoDb usersDao, AuthService authService, TransactionDaoDb transDao) {
         this.packageDao = packageDao;
         this.usersDao = usersDao;
         this.authService = authService;
@@ -50,55 +50,7 @@ public class PackageController extends Controller {
                 break;
         }
     }
-   /* public void acquirePackage(Map<String, String> headers, BufferedWriter out) throws IOException {
-        try {
-            if (!authService.authenticate(headers)){
-                sendMethodNotAllowed(out);
-            }
-            String username = headers.get("Authorization").split(" ")[1].split("-")[0];
-            Optional<User> optionalUser = usersDao.get(username);
 
-            if (optionalUser.isEmpty()) {
-                sendBadRequest(out, "User not found.");
-                return;
-            }
-            User user = optionalUser.get();
-            // Überprüfen, ob der Benutzer genug Coins hat
-            if (user.getCoins() < 5) {
-                sendBadRequest(out, "Not enough money.");
-                return;
-            }
-
-            // Paket erwerben
-            Collection<Package> packages = packageDao.getAll();
-            if (packages.isEmpty()) {
-                sendInternalError(out, "No packages available.");
-                return;
-            }
-            Package randomPackage = packages.iterator().next();
-            //transaction durchführen
-            transDao.update(randomPackage, new String[]{username});
-            // Benutzer aktualisieren und Erfolgsmeldung senden
-            user.setCoins(user.getCoins() - 5);
-
-            String[] params = {
-                    user.getUsername(),
-                    user.getPassword(),
-                    user.getToken()
-            };
-            usersDao.update(user, params);
-
-            out.write("Content-Type: application/json\r\n");
-            out.write("\r\n");
-            out.write("{\"message\":\"Package acquired successfully\", \"packageId\": " + randomPackage.getId() + "}");
-        } catch (IllegalArgumentException e) {
-            sendBadRequest(out, e.getMessage());
-        } catch (Exception e) {
-            sendInternalError(out, "Error acquiring package: " + e.getMessage());
-        }
-        out.flush();
-    }
-*/
    public void acquirePackageController(Map<String, String> headers, BufferedWriter out) throws IOException {
        try {
            // Überprüfe Authentifizierung
@@ -159,67 +111,6 @@ public class PackageController extends Controller {
        out.flush();
    }
 
-    /*
-   public void acquirePackageController(Map<String, String> headers, BufferedWriter out) throws IOException {
-       try {
-           // Authentifizierung prüfen
-           if (!authService.authenticate(headers)) {
-               sendUnauthorized(out, "Unauthorized request.");
-               return;
-           }
-
-           // Benutzername extrahieren
-           String authorization = headers.get("Authorization");
-           if (authorization == null || !authorization.startsWith("Bearer ")) {
-               sendBadRequest(out, "Invalid Authorization header.");
-               return;
-           }
-           String username = authorization.substring("Bearer ".length()).split("-")[0];
-
-           Optional<User> user = usersDao.getText(username);
-
-           if (user.isEmpty()) {
-               sendBadRequest(out, "User not found.");
-               return;
-           }
-
-           // Überprüfen, ob der Benutzer genug Coins hat
-           User userEntity = user.get();
-           if (userEntity.getCoins() < 5) {
-               sendBadRequest(out, "Not enough money.");
-               return;
-           }
-
-           // Paket erwerben (verwende acquirePackage anstelle von getAll)
-           Package acquiredPackage = packageDao.acquirePackage();
-           if (acquiredPackage == null) {
-               sendInternalError(out, "No packages available.");
-               return;
-           }
-
-           // Benutzer aktualisieren
-           userEntity.setCoins(userEntity.getCoins() - 5);
-           usersDao.update(userEntity, new String[]{
-                   userEntity.getUsername(),
-                   userEntity.getPassword(),
-                   userEntity.getToken()
-           });
-
-           // Erfolgsmeldung senden
-           out.write("HTTP/1.1 201 Created\r\n");
-           out.write("Content-Type: application/json\r\n");
-           out.write("\r\n");
-           out.write("{\"message\":\"Package acquired successfully\", \"packageId\": " + acquiredPackage.getId() + "}");
-       } catch (IllegalArgumentException e) {
-           sendBadRequest(out, e.getMessage());
-       } catch (Exception e) {
-           sendInternalError(out, "Error acquiring package: " + e.getMessage());
-       }
-       out.flush();
-   }
-*/
-
-
     private void createPackage(String body, BufferedWriter out) throws IOException {
         try {
             List<Map<String, Object>> packages = objectMapper.readValue(body, new TypeReference<>() {});
@@ -270,46 +161,6 @@ public class PackageController extends Controller {
         } catch (Exception e) {
             sendInternalError(out, "Error creating package: " + e.getMessage());
         }
-        out.flush();
-    }
-
-
-
-    private void sendBadRequest(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 400 Bad Request\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
-    }
-
-    private void sendInternalError(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 500 Internal Server Error\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-    }
-
-    private void sendNotFound(BufferedWriter out,  String message) throws IOException {
-        out.write("HTTP/1.1 404 Not Found\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write("404 - Not Found");
-        out.flush();
-    }
-
-    private void sendMethodNotAllowed(BufferedWriter out) throws IOException {
-        out.write("HTTP/1.1 405 Method Not Allowed\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write("405 - Method Not Allowed");
-        out.flush();
-    }
-    private void sendUnauthorized(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 401 Unauthorized\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
         out.flush();
     }
 

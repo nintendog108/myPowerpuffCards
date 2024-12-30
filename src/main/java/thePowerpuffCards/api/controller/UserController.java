@@ -218,44 +218,6 @@ public class UserController extends Controller {
         return authorization.substring("Bearer ".length()).split("-")[0];
     }
 
-    private void sendUnauthorized(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 401 Unauthorized\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
-    }
-
-    private void sendNotFound(BufferedWriter out) throws IOException {
-        out.write("HTTP/1.1 404 Not Found\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write("404 - Not Found");
-        out.flush();
-    }
-
-    private void sendMethodNotAllowed(BufferedWriter out) throws IOException {
-        out.write("HTTP/1.1 405 Method Not Allowed\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write("405 - Method Not Allowed");
-        out.flush();
-    }
-
-    private void sendBadRequest(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 400 Bad Request\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
-    }
-    private void sendInternalError(BufferedWriter out, String message) throws IOException {
-        out.write("HTTP/1.1 500 Internal Server Error\r\n");
-        out.write("Content-Type: text/plain\r\n");
-        out.write("\r\n");
-        out.write(message);
-        out.flush();
-    }
 
     private void logScoreboard(List<Map<String, Object>> scoreboard) {
         System.out.println("=== SCOREBOARD ===");
