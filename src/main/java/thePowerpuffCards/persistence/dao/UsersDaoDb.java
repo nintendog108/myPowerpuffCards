@@ -130,16 +130,18 @@ public class UsersDaoDb implements Dao<User> {
     public void save(User user) {
         if (userExists(user.getUsername())) {
             logger.severe("User with username " + user.getUsername() + " already exists.");
-            return; // Bricht die Speicherung ab
+            return;
         }
 
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-        INSERT INTO users
-        (username, password, token, coins)
-        VALUES (?, ?, ?, ?)
-        RETURNING uid;
-        """)
-        ) {
+        INSERT INTO users (username, password, token, coins) 
+        VALUES (?, ?, ?, ?) RETURNING uid;
+    """);
+             PreparedStatement statsStatement = DbConnection.getInstance().prepareStatement("""
+        INSERT INTO stats (username, games_played, games_won, games_lost, elo)
+        VALUES (?, 0, 0, 0, 100);
+    """)) {
+            // Benutzer speichern
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
             statement.setString(3, "");
@@ -148,10 +150,15 @@ public class UsersDaoDb implements Dao<User> {
             if (resultSet.next()) {
                 user.setId(resultSet.getInt(1));
             }
+
+            // Statistiken speichern
+            statsStatement.setString(1, user.getUsername());
+            statsStatement.executeUpdate();
         } catch (SQLException e) {
             logger.severe("Error saving user: " + e.getMessage());
         }
     }
+
 
 
 
