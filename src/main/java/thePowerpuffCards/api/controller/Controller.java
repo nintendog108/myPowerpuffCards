@@ -61,4 +61,12 @@ public abstract class Controller {
         out.write("404 - Not Found");
         out.flush();
     }
+   protected void sendConflict(BufferedWriter out, String message) throws IOException {
+        out.write("HTTP/1.1 409 Conflict\r\n");
+        out.write("Content-Type: text/plain\r\n");
+        out.write("\r\n");
+        out.write("Error: " + message + "\r\n");
+        out.flush();
+    }
+
 }

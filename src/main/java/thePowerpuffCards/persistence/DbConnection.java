@@ -75,6 +75,7 @@ public class DbConnection implements Closeable {
                         required_type VARCHAR(50) NOT NULL,
                         min_damage INT NOT NULL,
                         offered_by VARCHAR(255) NOT NULL,
+                        status VARCHAR(50) DEFAULT 'active',
                         FOREIGN KEY (offered_card_id) REFERENCES card(cid),
                         FOREIGN KEY (offered_by) REFERENCES users(username)
                     );

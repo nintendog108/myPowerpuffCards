@@ -1,28 +1,22 @@
 package thePowerpuffCards.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import thePowerpuffCards.core.models.cards.Card;
-import thePowerpuffCards.persistence.DbConnection;
 import thePowerpuffCards.persistence.dao.CardDaoDb;
 import thePowerpuffCards.persistence.dao.TradeDaoDb;
 import thePowerpuffCards.core.services.TradeService;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 import java.util.List;
 import java.util.Map;
 
 public class TradeController extends Controller {
     private final TradeDaoDb tradeDao;
-    private final CardDaoDb cardDao;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public TradeController(TradeDaoDb tradeDao, CardDaoDb cardDao) {
+    public TradeController(TradeDaoDb tradeDao) {
         this.tradeDao = tradeDao;
-        this.cardDao = cardDao;
     }
 
     @Override
@@ -31,19 +25,46 @@ public class TradeController extends Controller {
 
         if ("POST".equalsIgnoreCase(method) && path.equals("/tradings")) {
             System.out.println("*************   POST /tradings recognized");
-            createTrade(headers, body, out);
+            try {
+                createTrade(headers, body, out);
+            } catch (IllegalArgumentException e) {
+                sendConflict(out, e.getMessage()); // HTTP 409 für Konflikte
+            }
         } else if ("POST".equalsIgnoreCase(method) && path.startsWith("/tradings/")) {
             System.out.println("*************   POST /tradings/{id} recognized");
             acceptTrade(headers, path, body, out);
         } else if ("GET".equalsIgnoreCase(method) && path.equals("/tradings")) {
             System.out.println("*************   GET /tradings recognized");
             listTrades(out);
+        } else if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/tradings/")) {
+            System.out.println("*************   DELETE /tradings/{id} recognized");
+            String tradeId = path.split("/")[2];
+            deleteTrade(headers, tradeId, out);
         } else {
             System.out.println("*************   No matching route for method=" + method + ", path=" + path);
             sendNotFound(out, "Invalid endpoint.");
         }
     }
 
+    public void deleteTrade(Map<String, String> headers, String tradeId, BufferedWriter out) throws IOException {
+        System.out.println("*************   Deleting trade with ID: " + tradeId);
+        try {
+            // Benutzername aus dem Token extrahieren
+            String token = headers.get("Authorization").split(" ")[1]; // "kienboec-mtcgToken"
+            String username = token.split("-")[0]; // "kienboec"
+            System.out.println("*************   Username from header: " + username);
+
+            boolean isDeleted = tradeDao.deleteTrade(tradeId, username);
+            if (isDeleted) {
+                sendOk(out, "Trade deleted successfully.");
+            } else {
+                sendNotFound(out, "Trade not found or you are not authorized to delete it.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error deleting trade: " + e.getMessage());
+            sendBadRequest(out, "Error deleting trade: " + e.getMessage());
+        }
+    }
 
 
 
@@ -105,30 +126,6 @@ public class TradeController extends Controller {
         sendOk(out, response);
     }
 
-
-    private void deleteTrade(Map<String, String> headers, String path, BufferedWriter out) throws IOException {
-        String username = getUsernameFromHeaders(headers); // Extract the username from the authorization header
-        if (username == null) {
-            sendUnauthorized(out, "Invalid token.");
-            return;
-        }
-
-        try {
-            // Extract the trade ID from the path
-            String tradeId = path.split("/")[1]; // Assumes path = "/{tradeId}"
-
-            // Use the DAO to delete the trade
-            boolean success = tradeDao.deleteTrade(tradeId, username);
-
-            if (success) {
-                sendOk(out, "Trade deleted successfully.");
-            } else {
-                sendNotFound(out, "Trade not found or not authorized.");
-            }
-        } catch (Exception e) {
-            sendInternalError(out, "Error deleting trade: " + e.getMessage());
-        }
-    }
     private String getUsernameFromHeaders(Map<String, String> headers) {
         String authorization = headers.get("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {

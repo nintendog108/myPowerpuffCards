@@ -25,7 +25,7 @@ public class Router {
         SessionController sessionController = new SessionController(usersDao);
         PackageController packageController = new PackageController(packageDao, usersDao, authService, transDao);
         CardController cardController = new CardController(usersDao);
-        TradeController tradeController = new TradeController(new TradeDaoDb(), new CardDaoDb());
+        TradeController tradeController = new TradeController(tradeDao);
 
         // routes
         routes.put("/users", userController);

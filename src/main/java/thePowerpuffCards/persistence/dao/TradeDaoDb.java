@@ -13,6 +13,15 @@ public class TradeDaoDb {
 
 
     public void createTrade(TradeService trade) throws SQLException {
+        String checkSql = "SELECT COUNT(*) FROM trades WHERE trade_id = ?";
+        try (PreparedStatement checkStmt = DbConnection.getInstance().prepareStatement(checkSql)) {
+            checkStmt.setString(1, trade.getTradeId());
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new IllegalArgumentException("Trade with ID " + trade.getTradeId() + " already exists.");
+                }
+            }
+        }
         System.out.println("*************   createTrade called for trade ID: " + trade.getTradeId());
         String sql = "INSERT INTO trades (trade_id, offered_card_id, required_type, min_damage, offered_by) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
@@ -50,6 +59,19 @@ public class TradeDaoDb {
         return trades;
     }
 
+    public void updateTradeStatus(String tradeId, String status) throws SQLException {
+        String sql = "UPDATE trades SET status = ? WHERE trade_id = ?";
+        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, status);
+            stmt.setString(2, tradeId);
+            int rowsUpdated = stmt.executeUpdate();
+            System.out.println("*************   Rows updated: " + rowsUpdated);
+        } catch (SQLException e) {
+            System.err.println("Error updating trade status: " + e.getMessage());
+            throw e;
+        }
+    }
+
     public boolean deleteTrade(String tradeId, String username) throws SQLException {
         String sql = "DELETE FROM trades WHERE trade_id = ? AND offered_by = ?";
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
@@ -57,12 +79,10 @@ public class TradeDaoDb {
             stmt.setString(2, username);
             int rowsDeleted = stmt.executeUpdate();
             System.out.println("*************   Rows deleted: " + rowsDeleted);
-            System.out.println("*************   Deleting trade with ID: " + tradeId + " by user: " + username);
+            System.out.println("SQL Query: " + sql);
+            System.out.println("Parameters: tradeId=" + tradeId + ", username=" + username);
 
             return rowsDeleted > 0;
-        } catch (SQLException e) {
-            System.err.println("Error deleting trade: " + e.getMessage());
-            throw e;
         }
     }
 
@@ -94,7 +114,8 @@ public class TradeDaoDb {
                 cardDao.transferCard(offeredCardId, sellerUsername, buyerUsername);
 
                 // Remove the trade
-                deleteTrade(tradeId, sellerUsername);
+                updateTradeStatus(tradeId, "completed");
+
             } else {
                 throw new SQLException("Trade not found.");
             }
