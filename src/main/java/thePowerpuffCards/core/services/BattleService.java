@@ -31,17 +31,22 @@ public class BattleService {
     }
 
     public String startBattle() {
-        System.out.println("Starting battle:");
-        System.out.println("Player 1: " + player1 + " | Deck size: " + player1Deck.size());
-        System.out.println("Player 2: " + player2 + " | Deck size: " + player2Deck.size());
+        battleLog.setLength(0); // Alte Logs löschen
+        battleLog.append("Starting battle: ").append(player1).append(" vs ").append(player2).append("\n");
+
+        System.out.println("Starting battleeeeee: " + player1 + " vs " + player2); // Nur hier loggen
+        System.out.println("Player 1 deck size: " + player1Deck.size());
+        System.out.println("Player 2 deck size: " + player2Deck.size());
+
         if (player1Deck.isEmpty() || player2Deck.isEmpty()) {
             battleLog.append("One or both players have no valid deck.\n");
-            System.out.println("Battle cannot start: Player 1 deck size: " + player1Deck.size() +
-                    ", Player 2 deck size: " + player2Deck.size());
             return battleLog.toString();
         }
+
         int roundCounter = 1;
         Random random = new Random();
+        boolean player1BoosterUsed = false;
+        boolean player2BoosterUsed = false;
 
         while (roundCounter <= MAX_ROUNDS && !player1Deck.isEmpty() && !player2Deck.isEmpty()) {
             battleLog.append("\nRound ").append(roundCounter).append(":\n");
@@ -49,10 +54,21 @@ public class BattleService {
             Card player1Card = player1Deck.get(random.nextInt(player1Deck.size()));
             Card player2Card = player2Deck.get(random.nextInt(player2Deck.size()));
 
+            if (!player1BoosterUsed && random.nextBoolean()) {
+                applyBooster(player1Card);
+                player1BoosterUsed = true;
+                battleLog.append(player1).append(" activated a Power-Up Booster!\n");
+                System.out.println("Player 1 using booster");
+            }
+            if (!player2BoosterUsed && random.nextBoolean()) {
+                applyBooster(player2Card);
+                player2BoosterUsed = true;
+                battleLog.append(player2).append(" activated a Power-Up Booster!\n");
+                System.out.println("Player 2 using booster");
+            }
+
             formatRoundLog(player1, player1Card);
             formatRoundLog(player2, player2Card);
-            System.out.println("Player1 Card: " + player1Card.getName() + " | ElementType: " + player1Card.getElementType());
-            System.out.println("Player2 Card: " + player2Card.getName() + " | ElementType: " + player2Card.getElementType());
 
             int roundResult = calculateRoundResult(player1Card, player2Card);
 
@@ -74,6 +90,18 @@ public class BattleService {
         determineWinner();
         return battleLog.toString();
     }
+
+
+
+    private void applyBooster(Card card) {
+        if (card != null) {
+            System.out.println("Applying booster to card: " + card.getName());
+            // Booster-Effekt: Schaden verdoppeln
+            double boostedDamage = card.getDamage() * 2;
+            card.setDamage(boostedDamage);
+        }
+    }
+
 
     private int calculateRoundResult(Card player1Card, Card player2Card) {
         if (player1Card instanceof MonsterCard && player2Card instanceof MonsterCard) {

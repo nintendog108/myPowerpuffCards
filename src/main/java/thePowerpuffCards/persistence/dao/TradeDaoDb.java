@@ -79,7 +79,7 @@ public class TradeDaoDb {
             stmt.setString(2, username);
             int rowsDeleted = stmt.executeUpdate();
             System.out.println("*************   Rows deleted: " + rowsDeleted);
-            System.out.println("SQL Query: " + sql);
+       //     System.out.println("SQL Query: " + sql);
             System.out.println("Parameters: tradeId=" + tradeId + ", username=" + username);
 
             return rowsDeleted > 0;
@@ -87,7 +87,7 @@ public class TradeDaoDb {
     }
 
     public void acceptTrade(String tradeId, String buyerUsername, String buyerCardId) throws SQLException {
-        System.out.println("Processing acceptTrade: tradeId=" + tradeId + ", buyerUsername=" + buyerUsername + ", buyerCardId=" + buyerCardId);
+   //     System.out.println("Processing acceptTrade: tradeId=" + tradeId + ", buyerUsername=" + buyerUsername + ", buyerCardId=" + buyerCardId);
         String sql = "SELECT offered_by, offered_card_id, required_type, min_damage FROM trades WHERE trade_id = ?";
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, tradeId);

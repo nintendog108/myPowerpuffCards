@@ -71,7 +71,7 @@ public class UsersDaoDb implements Dao<User> {
 
 
     public Optional<User> getText(String username) {
-        System.out.println("Fetching user from database: " + username); // Debug-Ausgabe
+     //   System.out.println("Fetching user from database: " + username); // Debug-Ausgabe
         String sql = """
         SELECT uid, username, password, token, coins
         FROM users
@@ -89,7 +89,7 @@ public class UsersDaoDb implements Dao<User> {
                 user.setId(resultSet.getInt("uid"));
                 user.setToken(resultSet.getString("token"));
                 user.setCoins(resultSet.getInt("coins"));
-                System.out.println("User found: " + user.getUsername() + " with Token: " + user.getToken()); // Debug-Ausgabe
+              //  System.out.println("User found: " + user.getUsername() + " with Token: " + user.getToken()); // Debug-Ausgabe
                 return Optional.of(user);
             } else {
                 System.out.println("No user found with username: " + username); // Debug-Ausgabe
@@ -159,36 +159,6 @@ public class UsersDaoDb implements Dao<User> {
         }
     }
 
-
-
-
-
-
-    public User getUserByToken(String token) {
-        String sql = """
-        SELECT uid, username, password, token, coins
-        FROM users
-        WHERE token = ?;
-    """;
-
-        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
-            stmt.setString(1, token);
-            ResultSet resultSet = stmt.executeQuery();
-            if (resultSet.next()) {
-                User user = new User(
-                        resultSet.getString("username"),
-                        resultSet.getString("password")
-                );
-                user.setId(resultSet.getInt("uid"));
-                user.setToken(resultSet.getString("token"));
-                user.setCoins(resultSet.getInt("coins"));
-                return user;
-            }
-        } catch (SQLException e) {
-            logger.severe("Error fetching user by token: " + e.getMessage());
-        }
-        return null;
-    }
 
     public void update(User user, String[] params) {
         user.setUsername(Objects.requireNonNull(params[0], "Username cannot be null"));
@@ -328,13 +298,13 @@ public class UsersDaoDb implements Dao<User> {
         }
     }
 
-    public List<Card> getDeck(String username) {
+    public synchronized List<Card> getDeck(String username) {
         String sql = """
-        SELECT card.cid, card.name, card.damage, card.element_type, card.monster_type
-        FROM deck
-        JOIN card ON deck.cid = card.cid
-        WHERE deck.username = ?
-        ORDER BY deck.deck_slot
+    SELECT card.cid, card.name, card.damage, card.element_type, card.monster_type
+    FROM deck
+    JOIN card ON deck.cid = card.cid
+    WHERE deck.username = ?
+    ORDER BY deck.deck_slot
     """;
 
         List<Card> deck = new ArrayList<>();
@@ -348,14 +318,7 @@ public class UsersDaoDb implements Dao<User> {
                 double damage = rs.getDouble("damage");
                 String rawElementType = rs.getString("element_type");
 
-                // Debug-Ausgabe für element_type
-                System.out.println("Raw element_type from DB: " + rawElementType);
-
-                ElementType elementType = ElementType.getType(rawElementType);
-
-                // Debug-Ausgabe für konvertiertes ElementType
-                System.out.println("Converted ElementType: " + elementType);
-
+                ElementType elementType = ElementType.valueOf(rawElementType);
                 String monsterTypeStr = rs.getString("monster_type");
                 MonsterType monsterType = monsterTypeStr != null ? MonsterType.valueOf(monsterTypeStr) : null;
 
@@ -371,6 +334,9 @@ public class UsersDaoDb implements Dao<User> {
         } catch (SQLException e) {
             logger.severe("Error fetching deck: " + e.getMessage());
         }
+
+        // Debug-Ausgabe, um zu überprüfen, ob Karten geladen wurden
+     //   System.out.println("Deck fetched for user: " + username + ", size: " + deck.size());
         return deck;
     }
 
@@ -478,12 +444,12 @@ public class UsersDaoDb implements Dao<User> {
             logger.severe("Error incrementing games lost for user: " + username + " - " + e.getMessage());
         }
     }
-    public void updateElo(String username, int eloChange) {
+    public synchronized void updateElo(String username, int eloChange) {
         String sql = """
         UPDATE stats
         SET elo = elo + ?
         WHERE username = ?
-    """;
+        """;
 
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setInt(1, eloChange);
@@ -494,14 +460,15 @@ public class UsersDaoDb implements Dao<User> {
         }
     }
 
+
     public String getRandomOpponent(String currentUser) {
         String sql = """
-        SELECT username 
-        FROM deck 
-        WHERE username != ? 
+        SELECT username
+        FROM deck
+        WHERE username != ?
         GROUP BY username
         HAVING COUNT(*) = 4
-        ORDER BY RANDOM() 
+        ORDER BY RANDOM()
         LIMIT 1;
     """;
 

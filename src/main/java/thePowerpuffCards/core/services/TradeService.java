@@ -2,7 +2,6 @@ package thePowerpuffCards.core.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import thePowerpuffCards.core.models.cards.Card;
-import thePowerpuffCards.core.models.cards.Stack;
 import thePowerpuffCards.core.models.cards.monster.MonsterCard;
 import thePowerpuffCards.core.models.cards.spell.SpellCard;
 import thePowerpuffCards.persistence.dao.CardDaoDb;
@@ -29,7 +28,7 @@ public class TradeService {
     }
 
     public static TradeService fromJson(String json, String offeredByUser) throws IOException {
-        System.out.println("*************   Parsing TradeService from JSON: " + json);
+ //       System.out.println("*************   Parsing TradeService from JSON: " + json);
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> tradeData = objectMapper.readValue(json, Map.class);
 
@@ -38,7 +37,7 @@ public class TradeService {
         String type = (String) tradeData.get("Type");
         int minDamage = (int) tradeData.get("MinimumDamage");
 
-        System.out.println("*************   Parsed TradeService: tradeId=" + tradeId + ", cardId=" + cardId);
+     //   System.out.println("*************   Parsed TradeService: tradeId=" + tradeId + ", cardId=" + cardId);
 
         Card offeredCard = new CardDaoDb().getCardById(cardId);
         if (offeredCard == null) {

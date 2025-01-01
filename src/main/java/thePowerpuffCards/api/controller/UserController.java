@@ -12,10 +12,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UserController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UsersDaoDb usersDao;
+    private static final Map<String, Boolean> activeBattles = new ConcurrentHashMap<>();
 
     public UserController(UsersDaoDb usersDao) {
         this.usersDao = usersDao;
@@ -34,7 +36,7 @@ public class UserController extends Controller {
             }
         } else if (pathParts.length == 3 && "users".equals(pathParts[1])) {
             String targetUsername = pathParts[2];
-            System.out.println("Target username: " + targetUsername); // Debug-Ausgabe
+        //    System.out.println("Target username: " + targetUsername); // Debug-Ausgabe
             if ("GET".equalsIgnoreCase(method)) {
                 getUserProfile(targetUsername, headers, out);
         } else if ("PUT".equalsIgnoreCase(method)) {
@@ -57,36 +59,21 @@ public class UserController extends Controller {
             return;
         }
 
-        String player2 = null;
-
-        try {
-            // Gegner aus dem Body lesen, falls vorhanden
-            if (body != null && !body.trim().isEmpty()) {
-                Map<String, String> requestBody = objectMapper.readValue(body, Map.class);
-                player2 = requestBody.get("opponent");
-            }
-
-            // Zufälligen Gegner auswählen, wenn keiner angegeben wurde
-            if (player2 == null) {
-                player2 = usersDao.getRandomOpponent(player1);
-                if (player2 == null) {
-                    sendBadRequest(out, "No available opponent with a valid deck.");
-                    return;
-                }
-            }
-
-            // Decks der Spieler laden
-            List<Card> player1Deck = usersDao.getDeck(player1);
-            List<Card> player2Deck = usersDao.getDeck(player2);
-
-            System.out.println("Starting battle: " + player1 + " vs " + player2);
-            System.out.println("Player 1 deck size: " + player1Deck.size());
-            System.out.println("Player 2 deck size: " + player2Deck.size());
-
-            if (player1Deck.isEmpty() || player2Deck.isEmpty()) {
-                sendBadRequest(out, "One or both players have no valid deck.");
+        synchronized (activeBattles) {
+            if (activeBattles.getOrDefault(player1, false)) {
+                sendBadRequest(out, "Player is already in a battle.");
                 return;
             }
+            activeBattles.put(player1, true);
+        }
+
+        try {
+            // Gegner bestimmen und Decks laden
+            String player2 = determineOpponent(body, player1);
+            if (player2 == null) return;
+
+            List<Card> player1Deck = usersDao.getDeck(player1);
+            List<Card> player2Deck = usersDao.getDeck(player2);
 
             // BattleService starten
             BattleService battleService = new BattleService(player1, player2, player1Deck, player2Deck, usersDao);
@@ -96,13 +83,34 @@ public class UserController extends Controller {
             out.write("Content-Type: text/plain\r\n");
             out.write("\r\n");
             out.write(battleResult);
-        } catch (Exception e) {
-            sendInternalError(out, "Error during battle: " + e.getMessage());
+        } finally {
+            synchronized (activeBattles) {
+                activeBattles.remove(player1);
+            }
+            out.flush();
         }
-        out.flush();
     }
 
 
+    private String determineOpponent(String body, String player1) throws IOException {
+        String player2 = null;
+
+        // Gegner aus dem Body lesen, falls vorhanden
+        if (body != null && !body.trim().isEmpty()) {
+            Map<String, String> requestBody = objectMapper.readValue(body, Map.class);
+            player2 = requestBody.get("opponent");
+        }
+
+        // Zufälligen Gegner auswählen, wenn keiner angegeben wurde
+        if (player2 == null) {
+            player2 = usersDao.getRandomOpponent(player1);
+            if (player2 == null) {
+                throw new IOException("No available opponent with a valid deck.");
+            }
+        }
+
+        return player2;
+    }
 
 
     private void showScoreboard(Map<String, String> headers, BufferedWriter out) throws IOException {

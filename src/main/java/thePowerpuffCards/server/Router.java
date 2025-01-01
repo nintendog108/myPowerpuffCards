@@ -42,7 +42,7 @@ public class Router {
     public Controller getController(String route) {
         for (Map.Entry<String, Controller> entry : routes.entrySet()) {
             if (route.startsWith(entry.getKey())) {
-                System.out.println("Routing to controller: " + entry.getKey());
+             //   System.out.println("Routing to controller: " + entry.getKey());
                 return entry.getValue();
             }
         }

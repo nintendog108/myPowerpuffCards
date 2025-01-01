@@ -4,11 +4,14 @@ public abstract class Card {
     private String Id;
     private final ElementType type;
     private final String name;
-    private final double damage;
+    private double damage;
 
     public String getName() {
 
         return name;
+    }
+    public void setDamage(double damage) {
+        this.damage = damage;
     }
 
     public double getDamage() {
@@ -26,7 +29,7 @@ public abstract class Card {
         this.name = name;
         this.damage = damage;
         this.type = type;
-    } // ctor
+    }
 
     public void setId(String id) {
         this.Id = id;

@@ -22,7 +22,7 @@ public class HttpServer {
             System.out.println("Server started successfully on port " + port);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
+         //       System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
                 threadPool.submit(new ClientHandler(clientSocket, router));
             }
         } catch (IOException e) {

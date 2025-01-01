@@ -77,7 +77,7 @@ public class PackageController extends Controller {
            // Überprüfen, ob der Benutzer genug Coins hat
            User userEntity = user.get();
            if (userEntity.getCoins() < 5) {
-               System.out.println("User Coins: " + userEntity.getCoins());
+            //   System.out.println("User Coins: " + userEntity.getCoins());
                sendBadRequest(out, "Not enough money.");
                return;
            }

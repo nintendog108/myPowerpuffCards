@@ -12,26 +12,17 @@ public class AuthService {
     public AuthService(UsersDaoDb usersDaoDb) {
         this.usersDaoDb = usersDaoDb;
     }
-    /*public boolean authenticate(Map<String, String> headers) {
-        String bearer = headers.get("Authorization");
-        if(bearer == null) return false;
-        String token = bearer.split(" ")[1];
-        String username = token.split("-")[0];
-        Optional<User> user = usersDaoDb.get(username);
-        if(user.isEmpty()) return false;
-        if(user.get().getToken().equals(token)) return true;
-        return false;
-    }*/
+
     public boolean authenticate(Map<String, String> headers) {
         String authorization = headers.get("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            System.out.println("Authorization header missing or invalid"); // Debug-Ausgabe
+        //    System.out.println("Authorization header missing or invalid"); // Debug-Ausgabe
             return false;
         }
 
         String token = extractToken(authorization);
         String username = token.split("-")[0];
-        System.out.println("Extracted Username: " + username); // Debug-Ausgabe
+      //  System.out.println("Extracted Username: " + username); // Debug-Ausgabe
 
         Optional<User> user = usersDaoDb.getText(username);
         if (user.isEmpty()) {
@@ -39,14 +30,14 @@ public class AuthService {
             return false;
         }
 
-        System.out.println("Expected Token: " + user.get().getToken()); // Debug-Ausgabe
+       // System.out.println("Expected Token: " + user.get().getToken()); // Debug-Ausgabe
         if (!user.get().getToken().equals(token)) {
-            System.out.println("Received Token: " + token); // Debug-Ausgabe
-            System.out.println("Token mismatch for user: " + username); // Debug-Ausgabe
+       //     System.out.println("Received Token: " + token); // Debug-Ausgabe
+        //    System.out.println("Token mismatch for user: " + username); // Debug-Ausgabe
             return false;
         }
 
-        System.out.println("User authenticated successfully: " + username); // Debug-Ausgabe
+     //   System.out.println("User authenticated successfully: " + username); // Debug-Ausgabe
         return true;
     }
 
@@ -56,7 +47,7 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid Authorization header");
         }
         String token = authorizationHeader.substring("Bearer ".length()).trim();
-        System.out.println("Extracted Token: " + token);
+      //  System.out.println("Extracted Token: " + token);
 
         return token;
     }

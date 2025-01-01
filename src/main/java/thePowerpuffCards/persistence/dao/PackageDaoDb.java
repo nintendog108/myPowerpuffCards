@@ -167,32 +167,6 @@ public class PackageDaoDb {
     }
 
 
-/*
-    //  mit 1 karte pid erstellen, zurückbekommen und dann
-    public long savePackage(Package pckg) {
-        String firstCard = "INSERT INTO packages (cid) values (?)";
-        String allCards = "INSERT INTO packages (pid, cid) values (?, ?)";
-        try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(firstCard);
-             PreparedStatement stmt2 = DbConnection.getInstance().prepareStatement(allCards)) {
-            stmt.setString(1, pckg.getCards().getFirst().getId());
-            stmt.executeUpdate();
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                pckg.setId(rs.getInt(1));
-            } else {
-                throw new SQLException("Failed to save package, no ID generated");
-            }
-            for (int i = 1; i < pckg.getCards().size(); i++) {
-                stmt2.setInt(1, pckg.getId());
-                stmt2.setString(2, pckg.getCards().get(i).getId());
-                stmt2.addBatch();
-            }
-            stmt2.executeBatch();
 
-        } catch (SQLException e) {
-            logger.severe("Error saving package: " + e.getMessage());
-        }
-        return -1;
-    } */
 
 }

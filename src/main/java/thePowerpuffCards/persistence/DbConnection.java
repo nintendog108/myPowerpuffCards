@@ -3,6 +3,9 @@ package thePowerpuffCards.persistence;
 import java.io.Closeable;
 import java.sql.*;
 
+import static org.postgresql.PGProperty.PASSWORD;
+import static org.postgresql.shaded.com.ongres.scram.common.ScramAttributes.USERNAME;
+
 public class DbConnection implements Closeable {
     private static DbConnection instance;
     private Connection connection;
@@ -109,14 +112,18 @@ public class DbConnection implements Closeable {
         return connect("monsterdb");
     }
 
-    public Connection getConnection() {
+
+    public synchronized Connection getConnection() {
         if (connection == null) {
             try {
                 connection = DbConnection.getInstance().connect();
                 if (connection != null) {
                     System.out.println("Database connection established.");
-                    System.out.println("*************   Database connection: " + DbConnection.getInstance().getConnection());
+                    System.out.println("*************   Database connection: " + connection);
                     System.out.println("Auto-commit mode: " + connection.getAutoCommit());
+                    connection.setAutoCommit(false); // Optional: Nur wenn manuelle Transaktionen benötigt werden
+                } else {
+                    throw new SQLException("Failed to establish a database connection.");
                 }
             } catch (SQLException e) {
                 System.err.println("Error getting connection: " + e.getMessage());
@@ -130,9 +137,6 @@ public class DbConnection implements Closeable {
         return getConnection().prepareStatement(sql);
     }
 
-    public boolean executeSql(String sql) throws SQLException {
-        return executeSql(getConnection(), sql, false);
-    }
 
     public static boolean executeSql(Connection connection, String sql, boolean ignoreIfFails) throws SQLException {
         try (Statement statement = connection.createStatement()) {

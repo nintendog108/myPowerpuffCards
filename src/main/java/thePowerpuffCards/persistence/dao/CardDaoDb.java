@@ -35,9 +35,9 @@ public class CardDaoDb {
                 stmt.setNull(5, Types.VARCHAR); // Kein MonsterType für SpellCards
             }
 
-            System.out.println("Saving card with ID: " + card.getId());
+      //      System.out.println("Saving card with ID: " + card.getId());
             stmt.executeUpdate();
-            System.out.println("Card saved successfully!");
+      //      System.out.println("Card saved successfully!");
 
         } catch (SQLException e) {
             logger.severe("Fehler beim Speichern der Karte: " + e.getMessage());
