@@ -1,5 +1,5 @@
 package testing;
-
+// LÄUFT 1/2, user already exist läuft nicht.
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 

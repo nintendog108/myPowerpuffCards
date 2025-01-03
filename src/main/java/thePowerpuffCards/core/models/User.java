@@ -18,7 +18,6 @@ public class User {
     private int coins = 20;
     private Stack stack;
     private Deck deck;
-    private int ELO;
     private String token;
 
     // Konstruktoren
@@ -29,7 +28,6 @@ public class User {
         this.token = "";
         this.stack = new Stack();
         this.deck = new Deck();
-        this.ELO = 100;
     }
 
     public User() { // für Jackson
@@ -65,13 +63,6 @@ public class User {
         this.coins = coins;
     }
 
-    public int getELO() {
-        return ELO;
-    }
-
-    public void setELO(int ELO) {
-        this.ELO = ELO;
-    }
 
     @JsonProperty("Password")
     public void setPassword(String password) {

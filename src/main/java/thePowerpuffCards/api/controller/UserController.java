@@ -70,7 +70,6 @@ public class UserController extends Controller {
         try {
             // Gegner bestimmen und Decks laden
             String player2 = determineOpponent(body, player1);
-            if (player2 == null) return;
 
             List<Card> player1Deck = usersDao.getDeck(player1);
             List<Card> player2Deck = usersDao.getDeck(player2);
@@ -78,11 +77,7 @@ public class UserController extends Controller {
             // BattleService starten
             BattleService battleService = new BattleService(player1, player2, player1Deck, player2Deck, usersDao);
             String battleResult = battleService.startBattle();
-
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("Content-Type: text/plain\r\n");
-            out.write("\r\n");
-            out.write(battleResult);
+            sendOk(out, battleResult);
         } finally {
             synchronized (activeBattles) {
                 activeBattles.remove(player1);
@@ -124,10 +119,7 @@ public class UserController extends Controller {
         if (!scoreboard.isEmpty()) {
             logScoreboard(scoreboard);
             String jsonResponse = objectMapper.writeValueAsString(scoreboard);
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("Content-Type: application/json\r\n");
-            out.write("\r\n");
-            out.write(jsonResponse);
+            sendOk(out, jsonResponse);
         } else {
             sendNotFound(out);
         }
@@ -143,10 +135,7 @@ public class UserController extends Controller {
         Optional<Map<String, Integer>> stats = usersDao.getUserStats(username);
         if (stats.isPresent()) {
             String jsonResponse = objectMapper.writeValueAsString(stats.get());
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("Content-Type: application/json\r\n");
-            out.write("\r\n");
-            out.write(jsonResponse);
+            sendOk(out, jsonResponse);
         } else {
             sendNotFound(out);
         }
@@ -157,10 +146,7 @@ public class UserController extends Controller {
         User newUser = objectMapper.readValue(body, User.class);
 
         if (usersDao.userExists(newUser.getUsername())) {
-            out.write("HTTP/1.1 409 Conflict\r\n");
-            out.write("Content-Type: text/plain\r\n");
-            out.write("\r\n");
-            out.write("User already exists");
+            sendConflict(out, "Username already exists.");
         } else {
             usersDao.save(newUser);
             out.write("HTTP/1.1 201 Created\r\n");
@@ -179,16 +165,10 @@ public class UserController extends Controller {
         Optional<Map<String, String>> profile = usersDao.getUserProfile(targetUsername);
         if (profile.isPresent()) {
             String jsonResponse = objectMapper.writeValueAsString(profile.get());
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("Content-Type: application/json\r\n");
-            out.write("\r\n");
-            out.write(jsonResponse);
+            sendOk(out, jsonResponse);
         } else {
             // Fallback: leeres Profil zurückgeben
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("Content-Type: application/json\r\n");
-            out.write("\r\n");
-            out.write("{\"Name\":\"\",\"Bio\":\"\",\"Image\":\"\"}");
+            sendNotFound(out);
         }
         out.flush();
     }
@@ -209,9 +189,7 @@ public class UserController extends Controller {
                     updatedProfile.get("Bio"),
                     updatedProfile.get("Image")
             );
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("\r\n");
-            out.write("User profile updated successfully.");
+            sendOk(out, "User profile updated.");
         } catch (Exception e) {
             sendBadRequest(out, "Error updating user profile: " + e.getMessage());
         }

@@ -1,5 +1,5 @@
 package testing;
-
+// LÄUFT 3
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 

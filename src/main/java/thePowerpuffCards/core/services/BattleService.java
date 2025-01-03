@@ -86,11 +86,17 @@ public class BattleService {
 
             roundCounter++;
         }
-
+        saveDeckChanges();
         determineWinner();
         return battleLog.toString();
     }
 
+    private void saveDeckChanges() {
+        usersDao.clearDeck(player1);
+        usersDao.saveDeck(player1, player1Deck);
+        usersDao.clearDeck(player2);
+        usersDao.saveDeck(player2, player2Deck);
+    }
 
 
     private void applyBooster(Card card) {
@@ -103,7 +109,7 @@ public class BattleService {
     }
 
 
-    private int calculateRoundResult(Card player1Card, Card player2Card) {
+    public int calculateRoundResult(Card player1Card, Card player2Card) {
         if (player1Card instanceof MonsterCard && player2Card instanceof MonsterCard) {
             return handleMonsterSpecialties((MonsterCard) player1Card, (MonsterCard) player2Card);
         }

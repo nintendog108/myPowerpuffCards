@@ -134,7 +134,7 @@ public class UsersDaoDb implements Dao<User> {
         }
 
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-        INSERT INTO users (username, password, token, coins) 
+        INSERT INTO users (username, password, token, coins)
         VALUES (?, ?, ?, ?) RETURNING uid;
     """);
              PreparedStatement statsStatement = DbConnection.getInstance().prepareStatement("""
