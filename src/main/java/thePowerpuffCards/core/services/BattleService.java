@@ -19,7 +19,7 @@ public class BattleService {
     private StringBuilder battleLog;
     private UsersDaoDb usersDao;
 
-    private static final int MAX_ROUNDS = 10;
+    private static final int MAX_ROUNDS = 100;
 
     public BattleService(String player1, String player2, List<Card> player1Deck, List<Card> player2Deck, UsersDaoDb usersDao) {
         this.player1Deck = new ArrayList<>(player1Deck);
@@ -57,14 +57,14 @@ public class BattleService {
             if (!player1BoosterUsed && random.nextBoolean()) {
                 applyBooster(player1Card);
                 player1BoosterUsed = true;
-                battleLog.append(player1).append(" activated a Power-Up Booster!\n");
-                System.out.println("Player 1 using booster");
+                battleLog.append(player1).append(" activated a Power-Up Booster!\n").append("Card: ").append(player1Card.getName()).append("\n").append(" | New Damage: ").append(player1Card.getDamage()).append("\n");
+            //    System.out.println("Player 1 using booster");
             }
             if (!player2BoosterUsed && random.nextBoolean()) {
                 applyBooster(player2Card);
                 player2BoosterUsed = true;
-                battleLog.append(player2).append(" activated a Power-Up Booster!\n");
-                System.out.println("Player 2 using booster");
+                battleLog.append(player2).append(" activated a Power-Up Booster!\n").append("Card: ").append(player2Card.getName()).append("\n").append(" | New Damage: ").append(player2Card.getDamage()).append("\n");
+              //  System.out.println("Player 2 using booster");
             }
 
             formatRoundLog(player1, player1Card);

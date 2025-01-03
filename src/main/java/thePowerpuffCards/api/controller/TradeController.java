@@ -21,27 +21,27 @@ public class TradeController extends Controller {
 
     @Override
     public void handleRequest(String method, String path, Map<String, String> headers, String body, BufferedWriter out) throws IOException {
-        System.out.println("Handling request: method=" + method + ", path=" + path);
+     //   System.out.println("Handling request: method=" + method + ", path=" + path);
 
         if ("POST".equalsIgnoreCase(method) && path.equals("/tradings")) {
-            System.out.println("*************   POST /tradings recognized");
+          //  System.out.println("*************   POST /tradings recognized");
             try {
                 createTrade(headers, body, out);
             } catch (IllegalArgumentException e) {
                 sendConflict(out, e.getMessage()); // HTTP 409 für Konflikte
             }
         } else if ("POST".equalsIgnoreCase(method) && path.startsWith("/tradings/")) {
-            System.out.println("*************   POST /tradings/{id} recognized");
+        //    System.out.println("*************   POST /tradings/{id} recognized");
             acceptTrade(headers, path, body, out);
         } else if ("GET".equalsIgnoreCase(method) && path.equals("/tradings")) {
-            System.out.println("*************   GET /tradings recognized");
+       //     System.out.println("*************   GET /tradings recognized");
             listTrades(out);
         } else if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/tradings/")) {
-            System.out.println("*************   DELETE /tradings/{id} recognized");
+        //    System.out.println("*************   DELETE /tradings/{id} recognized");
             String tradeId = path.split("/")[2];
             deleteTrade(headers, tradeId, out);
         } else {
-            System.out.println("*************   No matching route for method=" + method + ", path=" + path);
+         //   System.out.println("*************   No matching route for method=" + method + ", path=" + path);
             sendNotFound(out, "Invalid endpoint.");
         }
     }
@@ -52,7 +52,7 @@ public class TradeController extends Controller {
             // Benutzername aus dem Token extrahieren
             String token = headers.get("Authorization").split(" ")[1]; // "kienboec-mtcgToken"
             String username = token.split("-")[0]; // "kienboec"
-            System.out.println("*************   Username from header: " + username);
+         //   System.out.println("*************   Username from header: " + username);
 
             boolean isDeleted = tradeDao.deleteTrade(tradeId, username);
             if (isDeleted) {
@@ -69,7 +69,7 @@ public class TradeController extends Controller {
 
 
     private void createTrade(Map<String, String> headers, String body, BufferedWriter out) throws IOException {
-        System.out.println("*************   createTrade in controller called");
+      //  System.out.println("*************   createTrade in controller called");
         String username = getUsernameFromHeaders(headers);
         if (username == null) {
             sendUnauthorized(out, "Invalid token.");
@@ -79,7 +79,7 @@ public class TradeController extends Controller {
 
         try {
             TradeService trade = TradeService.fromJson(body, username);
-            System.out.println("*************   TradeService created: " + trade.getTradeId());
+         //   System.out.println("*************   TradeService created: " + trade.getTradeId());
             tradeDao.createTrade(trade);
             sendOk(out, "Trade created successfully.");
         } catch (Exception e) {

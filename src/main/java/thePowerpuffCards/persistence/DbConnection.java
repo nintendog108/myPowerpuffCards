@@ -119,8 +119,8 @@ public class DbConnection implements Closeable {
                 connection = DbConnection.getInstance().connect();
                 if (connection != null) {
                     System.out.println("Database connection established.");
-                    System.out.println("*************   Database connection: " + connection);
-                    System.out.println("Auto-commit mode: " + connection.getAutoCommit());
+              //      System.out.println("*************   Database connection: " + connection);
+              //      System.out.println("Auto-commit mode: " + connection.getAutoCommit());
                     connection.setAutoCommit(false); // Optional: Nur wenn manuelle Transaktionen benötigt werden
                 } else {
                     throw new SQLException("Failed to establish a database connection.");

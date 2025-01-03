@@ -22,7 +22,7 @@ public class TradeDaoDb {
                 }
             }
         }
-        System.out.println("*************   createTrade called for trade ID: " + trade.getTradeId());
+      //  System.out.println("*************   createTrade called for trade ID: " + trade.getTradeId());
         String sql = "INSERT INTO trades (trade_id, offered_card_id, required_type, min_damage, offered_by) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, trade.getTradeId());
@@ -31,7 +31,7 @@ public class TradeDaoDb {
             stmt.setInt(4, trade.getMinDamage());
             stmt.setString(5, trade.getOfferedByUser());
             int rowsInserted = stmt.executeUpdate();
-            System.out.println("*************   Rows inserted: " + rowsInserted);
+       //     System.out.println("*************   Rows inserted: " + rowsInserted);
         } catch (SQLException e) {
             System.err.println("Error creating trade: " + e.getMessage());
             throw e;
@@ -65,7 +65,7 @@ public class TradeDaoDb {
             stmt.setString(1, status);
             stmt.setString(2, tradeId);
             int rowsUpdated = stmt.executeUpdate();
-            System.out.println("*************   Rows updated: " + rowsUpdated);
+      //      System.out.println("*************   Rows updated: " + rowsUpdated);
         } catch (SQLException e) {
             System.err.println("Error updating trade status: " + e.getMessage());
             throw e;
@@ -78,9 +78,9 @@ public class TradeDaoDb {
             stmt.setString(1, tradeId);
             stmt.setString(2, username);
             int rowsDeleted = stmt.executeUpdate();
-            System.out.println("*************   Rows deleted: " + rowsDeleted);
+         //   System.out.println("*************   Rows deleted: " + rowsDeleted);
        //     System.out.println("SQL Query: " + sql);
-            System.out.println("Parameters: tradeId=" + tradeId + ", username=" + username);
+        //    System.out.println("Parameters: tradeId=" + tradeId + ", username=" + username);
 
             return rowsDeleted > 0;
         }
@@ -104,7 +104,7 @@ public class TradeDaoDb {
                 }
 
                 Card buyerCard = cardDao.getCardById(buyerCardId); // Use CardDaoDb here
-                System.out.println("Buyer card details: " + buyerCard);
+              //  System.out.println("Buyer card details: " + buyerCard);
                 if (!TradeService.validateCardForTrade(buyerCard, requiredType, minDamage)) {
                     throw new SQLException("Card does not meet trade requirements.");
                 }
