@@ -68,5 +68,13 @@ public abstract class Controller {
         out.write("Error: " + message + "\r\n");
         out.flush();
     }
+    protected void sendForbidden(BufferedWriter out, String message) throws IOException {
+        out.write("HTTP/1.1 403 Forbidden\r\n");
+        out.write("Content-Type: application/json\r\n");
+        out.write("\r\n");
+        out.write("{\"error\": \"" + message + "\"}");
+        out.flush();
+    }
+
 
 }

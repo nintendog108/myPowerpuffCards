@@ -9,6 +9,7 @@ import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,8 +74,18 @@ public class UserController extends Controller {
             // Gegner bestimmen und Decks laden
             String player2 = determineOpponent(body, player1);
 
-            List<Card> player1Deck = usersDao.getDeck(player1);
-            List<Card> player2Deck = usersDao.getDeck(player2);
+            List<Card> player1Deck = Optional.ofNullable(usersDao.getDeck(player1)).orElse(Collections.emptyList());
+            List<Card> player2Deck = Optional.ofNullable(usersDao.getDeck(player2)).orElse(Collections.emptyList());
+
+            if (player1Deck.size() != 4) {
+                sendBadRequest(out, player1 + " does not have a valid deck (exactly 4 cards required).");
+                return;
+            }
+            if (player2Deck.size() != 4) {
+                sendBadRequest(out, player2 + " does not have a valid deck (exactly 4 cards required).");
+                return;
+            }
+
 
             // BattleService starten
             BattleService battleService = new BattleService(player1, player2, player1Deck, player2Deck, usersDao);

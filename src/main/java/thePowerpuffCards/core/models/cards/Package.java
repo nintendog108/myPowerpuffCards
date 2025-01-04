@@ -8,7 +8,6 @@ import java.util.List;
 public class Package {
     private int id;
     private List<Card> cards;
-    private final int pckgCost = 5;
     private final int cardsinPckg = 5;
 
     public Package(List<Card> availableCards) {
@@ -43,23 +42,5 @@ public class Package {
         return cards;
     }
 
-    public boolean purchasePackage(User user) {
-        if (user.getCoins() >= pckgCost) {
-            user.setCoins(user.getCoins() - pckgCost);
-            user.getStack().addCards(cards);
-            System.out.println("Paket erfolgreich gekauft. " + pckgCost + " Münzen abgezogen.");
-            return true;
-        } else {
-            System.out.println("Nicht genügend Münzen, um das Paket zu kaufen.");
-            return false;
-        }
-    }
 
-    public int getPackageCost() {
-        return pckgCost;
-    }
-
-    public int getCardsInPackage() {
-        return cardsinPckg;
-    }
 }

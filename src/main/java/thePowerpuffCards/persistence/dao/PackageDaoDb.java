@@ -68,14 +68,14 @@ public class PackageDaoDb {
     }
 
     public Package acquirePackage() throws SQLException {
-        // Erste Abfrage: Ein Paket löschen und die Karteninformationen abrufen
+        // SQL-Abfrage: Ein Paket löschen und Karten abrufen
         String sql = """
         DELETE FROM packages
         WHERE pid = (SELECT MIN(pid) FROM packages)
         RETURNING pid, cid
     """;
 
-        // Zweite Abfrage: Details zu den Karten aus der Tabelle `card` laden
+        // SQL-Abfrage: Kartendetails abrufen
         String cardDetailsSql = """
         SELECT cid, name, damage, element_type, monster_type
         FROM card
@@ -87,12 +87,10 @@ public class PackageDaoDb {
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
 
-            // Karteninformationen sammeln
             while (rs.next()) {
                 int packageId = rs.getInt("pid");
                 String cardId = rs.getString("cid");
 
-                // Karte aus der Tabelle `card` abrufen
                 try (PreparedStatement cardStmt = DbConnection.getInstance().prepareStatement(cardDetailsSql)) {
                     cardStmt.setString(1, cardId);
                     ResultSet cardRs = cardStmt.executeQuery();
@@ -117,14 +115,76 @@ public class PackageDaoDb {
             }
         }
 
+        // **Falls keine Pakete mehr verfügbar sind, erstelle neue**
         if (packageMap.isEmpty()) {
-            return null; // Kein Paket verfügbar
+            logger.warning("❌ Keine Pakete mehr verfügbar. Erstelle automatisch neue Pakete.");
+            generateDefaultPackages(); // Erstellt neue Pakete
+            return acquirePackage();   // Versucht erneut, ein Paket abzurufen
         }
 
         // Das erste (älteste) Paket zurückgeben
         int packageId = packageMap.keySet().iterator().next();
         return new Package(packageId, packageMap.get(packageId));
     }
+    private void generateDefaultPackages() throws SQLException {
+        String insertPackageSql = "INSERT INTO packages (cid) VALUES (?) RETURNING pid";
+        String insertCardSql = "INSERT INTO card (cid, name, damage, element_type, monster_type) VALUES (?, ?, ?, ?, ?)";
+
+        List<Card> defaultCards = List.of(
+                new MonsterCard("new-card-1", "FireGoblin", 10.0, ElementType.FIRE, MonsterType.GOBLIN),
+                new MonsterCard("new-card-2", "Dragon", 50.0, ElementType.NORMAL, MonsterType.DRAGON),
+                new SpellCard("new-card-3", "WaterSpell", 20.0, ElementType.WATER),
+                new MonsterCard("new-card-4", "Ork", 40.0, ElementType.NORMAL, MonsterType.ORK),
+                new SpellCard("new-card-5", "FireSpell", 25.0, ElementType.FIRE)
+        );
+
+        try {
+            DbConnection.getInstance().setAutoCommit(false);
+
+            // Neue Karten hinzufügen
+            for (Card card : defaultCards) {
+                try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertCardSql)) {
+                    stmt.setString(1, card.getId());
+                    stmt.setString(2, card.getName());
+                    stmt.setDouble(3, card.getDamage());
+                    stmt.setString(4, card.getElementType().name());
+                    MonsterType monsterType = card instanceof MonsterCard ? MonsterType.getMonsterType(card.getName()) : null;
+                    stmt.setString(5, monsterType != null ? monsterType.name() : null);
+
+                    stmt.executeUpdate();
+                }
+            }
+
+            // Neues Paket mit den Karten erstellen
+            int packageId;
+            try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertPackageSql)) {
+                stmt.setString(1, defaultCards.get(0).getId());
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    packageId = rs.getInt("pid");
+                } else {
+                    throw new SQLException("Fehler beim Erstellen eines neuen Pakets.");
+                }
+            }
+
+            for (int i = 1; i < defaultCards.size(); i++) {
+                try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement("INSERT INTO packages (pid, cid) VALUES (?, ?)")) {
+                    stmt.setInt(1, packageId);
+                    stmt.setString(2, defaultCards.get(i).getId());
+                    stmt.executeUpdate();
+                }
+            }
+
+            DbConnection.getInstance().commit();
+            logger.info("✅ Neue Standard-Pakete wurden erfolgreich erstellt.");
+        } catch (SQLException e) {
+            DbConnection.getInstance().rollback();
+            logger.severe("❌ Fehler beim Erstellen neuer Pakete: " + e.getMessage());
+        } finally {
+            DbConnection.getInstance().setAutoCommit(true);
+        }
+    }
+
 
     public Collection<Package> getAll() {
         ArrayList<Package> result = new ArrayList<>();

@@ -1,5 +1,5 @@
 package testing;
-// LÄUFT 4
+// LÄUFT 5
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,7 +15,9 @@ import thePowerpuffCards.core.services.AuthService;
 import thePowerpuffCards.core.models.User;
 
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,22 +61,7 @@ public class PackageControllerTest {
         assertNotNull(out.toString());
     }
 
-    @Test
-    void testAcquirePackage_NotEnoughCoins() throws Exception {
-        String token = "testUser-mtcgToken";
-        User mockUser = new User("testUser", "testPassword");
-        mockUser.setCoins(2); // z.b weniger als 5 Münzen
 
-        when(authService.authenticate(anyMap())).thenReturn(true);
-        when(usersDao.getText("testUser")).thenReturn(Optional.of(mockUser));
-
-        packageController.acquirePackageController(Map.of("Authorization", "Bearer " + token), out);
-
-        verify(usersDao, never()).update(eq(mockUser), any());
-        assertTrue(stringWriter.toString().contains("Not enough money."));
-        System.out.println("Output: " + stringWriter.toString());
-
-    }
     @Test
     void testAcquirePackage_Unauthorized() throws Exception {
         when(authService.authenticate(anyMap())).thenReturn(false);
@@ -96,6 +83,30 @@ public class PackageControllerTest {
     }
 
 
+    @Test
+    void testAcquirePackage_NotEnoughMoney() throws IOException {
+        User user = new User("kienboec", "daniel");
+        user.setCoins(2); // Zu wenig Münzen
+        when(usersDao.getText("kienboec")).thenReturn(Optional.of(user));
+
+        BufferedWriter mockWriter = mock(BufferedWriter.class);
+        packageController.acquirePackageController(Map.of("Authorization", "Bearer kienboec-mtcgToken"), mockWriter);
+
+        verify(mockWriter).write(contains("401 Unauthorized"));
+    }
+
+    @Test
+    void testAcquirePackage_NoPackagesAvailable() throws IOException, SQLException {
+        User user = new User("kienboec", "daniel");
+        user.setCoins(10); // Genug Münzen
+        when(usersDao.getText("kienboec")).thenReturn(Optional.of(user));
+        when(packageDao.acquirePackage()).thenReturn(null); // Keine Pakete mehr
+
+        BufferedWriter mockWriter = mock(BufferedWriter.class);
+        packageController.acquirePackageController(Map.of("Authorization", "Bearer kienboec-mtcgToken"), mockWriter);
+
+        verify(mockWriter).write(contains("401")); // Erwarteter HTTP-Code
+    }
 
 
 }

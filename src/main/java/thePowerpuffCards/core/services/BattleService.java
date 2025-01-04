@@ -112,6 +112,7 @@ public class BattleService {
         usersDao.saveDeck(player2, player2Deck);
     }
 */
+
 private void saveDeckChanges() {
     if (!player1Deck.isEmpty() && usersDao.getDeck(player1).size() > 0) {
         System.out.println("DEBUG: Lösche altes Deck für " + player1);
@@ -129,8 +130,6 @@ private void saveDeckChanges() {
         System.out.println("⚠️ WARNUNG: " + player2 + " hat keine Karten mehr und wird nicht gespeichert.");
     }
 }
-
-
 
 
     private void applyBooster(Card card) {

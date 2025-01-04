@@ -325,24 +325,30 @@ public class UsersDaoDb implements Dao<User> {
     }*/
     public void saveDeck(String username, List<Card> deck) {
         if (deck.isEmpty()) {
-            logger.warning("⚠️ WARNUNG: " + username + " hat keine Karten mehr und kann kein weiteres Spiel starten!");
+            logger.warning("⚠️ WARNUNG: `saveDeck()` wurde aufgerufen, aber das Deck von " + username + " ist leer.");
             return;
         }
 
-
+        String checkExistingDeckSql = "SELECT COUNT(*) FROM deck WHERE username = ?";
         String deleteSql = "DELETE FROM deck WHERE username = ?";
         String insertSql = "INSERT INTO deck (username, cid, deck_slot) VALUES (?, ?, ?)";
 
         try (Connection conn = DbConnection.getInstance().connect()) {
-            conn.setAutoCommit(false); // Transaktion starten
+            conn.setAutoCommit(false);
 
-            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
-                 PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkExistingDeckSql)) {
+                checkStmt.setString(1, username);
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    logger.warning("⚠️ WARNUNG: `saveDeck()` wurde aufgerufen, aber " + username + " hat bereits ein Deck. Es wird vorher gelöscht.");
+                    try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                        deleteStmt.setString(1, username);
+                        deleteStmt.executeUpdate();
+                    }
+                }
+            }
 
-                deleteStmt.setString(1, username);
-                int deletedRows = deleteStmt.executeUpdate();
-                System.out.println("DEBUG: Deck für " + username + " gelöscht: " + deletedRows + " Einträge");
-
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                 for (int i = 0; i < deck.size(); i++) {
                     insertStmt.setString(1, username);
                     insertStmt.setString(2, deck.get(i).getId());
@@ -351,23 +357,21 @@ public class UsersDaoDb implements Dao<User> {
                 }
 
                 insertStmt.executeBatch();
-                Thread.sleep(100); // 100 ms warten, um sicherzustellen, dass DB-Update sichtbar ist
+                conn.commit();
+                logger.info("✅ Deck für " + username + " erfolgreich gespeichert!");
 
-                conn.commit(); // Transaktion bestätigen
-
-                System.out.println("DEBUG: Deck für " + username + " erfolgreich gespeichert!");
             } catch (SQLException e) {
                 conn.rollback();
-                logger.severe("Error saving deck: " + e.getMessage());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                logger.severe("❌ Fehler beim Speichern des Decks: " + e.getMessage());
             } finally {
                 conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            logger.severe("Database connection error: " + e.getMessage());
+            logger.severe("❌ Fehler beim Verbinden mit der Datenbank: " + e.getMessage());
         }
     }
+
+
 
 
     /*
@@ -436,20 +440,21 @@ public class UsersDaoDb implements Dao<User> {
 
     public void clearDeck(String username) {
         if (getDeck(username).isEmpty()) {
-            System.out.println("⚠️ WARNUNG: `clearDeck()` wurde aufgerufen, aber " + username + " hat kein Deck.");
+            logger.warning("⚠️ WARNUNG: `clearDeck()` wurde aufgerufen, aber " + username + " hat bereits kein Deck.");
             return;
         }
 
         String sql = "DELETE FROM deck WHERE username = ?";
-
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, username);
             int rowsDeleted = stmt.executeUpdate();
-            System.out.println("DEBUG: `clearDeck()` für " + username + " gelöscht: " + rowsDeleted + " Einträge");
+            logger.info("✅ Deck für " + username + " gelöscht: " + rowsDeleted + " Karten entfernt.");
         } catch (SQLException e) {
-            logger.severe("Error clearing deck: " + e.getMessage());
+            logger.severe("❌ Fehler beim Löschen des Decks für " + username + ": " + e.getMessage());
         }
     }
+
+
 
 
     public Optional<Map<String, Integer>> getUserStats(String username) {
@@ -582,6 +587,7 @@ public class UsersDaoDb implements Dao<User> {
         }
         return null;
     }
+
 
 
 

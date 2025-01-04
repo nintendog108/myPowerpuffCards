@@ -43,7 +43,7 @@ public class CardController extends Controller {
         }
     }
 
-    private void configureDeck(Map<String, String> headers, String body, BufferedWriter out) throws IOException {
+    public void configureDeck(Map<String, String> headers, String body, BufferedWriter out) throws IOException {
         String username = getUsernameFromHeaders(headers);
         if (username == null) {
             sendUnauthorized(out, "Invalid token.");
@@ -76,9 +76,14 @@ public class CardController extends Controller {
 
             // Deck speichern
             user.getDeck().defineDeck(selectedCards, username, usersDao);
+// Deck speichern, aber verhindern, dass ein leeres Deck gespeichert wird
+            if (selectedCards.isEmpty()) {
+                sendBadRequest(out, "Cannot configure an empty deck.");
+                return;
+            }
+
             usersDao.clearDeck(username);
             usersDao.saveDeck(username, selectedCards);
-
             sendOk(out, "Deck configured successfully.");
         } catch (Exception e) {
             sendBadRequest(out, "Error configuring deck: " + e.getMessage());
@@ -175,4 +180,5 @@ public class CardController extends Controller {
 
         sendOk(out, jsonResponse);
     }
+
 }

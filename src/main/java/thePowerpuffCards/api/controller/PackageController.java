@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import java.util.*;
 
+import static thePowerpuffCards.persistence.dao.UsersDaoDb.logger;
+
 public class PackageController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final PackageDaoDb packageDao;
@@ -76,15 +78,17 @@ public class PackageController extends Controller {
 
            // Überprüfen, ob der Benutzer genug Coins hat
            User userEntity = user.get();
+           // Überprüfen, ob der Benutzer genug Coins hat
            if (userEntity.getCoins() < 5) {
-            //   System.out.println("User Coins: " + userEntity.getCoins());
-               sendBadRequest(out, "Not enough money.");
+               sendForbidden(out, "Not enough money to buy a package.");
                return;
            }
+
 
            // Paket erwerben
            Package randomPackage = packageDao.acquirePackage();
            if (randomPackage == null) { // Falls keine Pakete mehr verfügbar sind
+               logger.warning("❌ Keine Pakete mehr verfügbar für " + username);
                sendNotFound(out, "No packages available.");
                return;
            }
