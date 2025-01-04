@@ -47,6 +47,9 @@ public class BattleService {
         Random random = new Random();
         boolean player1BoosterUsed = false;
         boolean player2BoosterUsed = false;
+        int player1Wins = 0;
+        int player1Losses = 0;
+        int draws = 0;
 
         while (roundCounter <= MAX_ROUNDS && !player1Deck.isEmpty() && !player2Deck.isEmpty()) {
             battleLog.append("\nRound ").append(roundCounter).append(":\n");
@@ -76,18 +79,29 @@ public class BattleService {
                 battleLog.append(player1).append(" won this round!\n");
                 player2Deck.remove(player2Card);
                 player1Deck.add(player2Card);
+                player1Wins++;
             } else if (roundResult < 0) {
                 battleLog.append(player2).append(" won this round!\n");
                 player1Deck.remove(player1Card);
                 player2Deck.add(player1Card);
+                player1Losses++;
             } else {
                 battleLog.append("It's a draw! No cards were moved.\n");
+                draws++;
             }
 
             roundCounter++;
         }
         saveDeckChanges();
         determineWinner();
+        System.out.println("===== Battle Results =====");
+        System.out.println(player1 + " won " + player1Wins + " rounds.");
+        System.out.println(player1 + " lost " + player1Losses + " rounds.");
+        System.out.println("Draws: " + draws);
+        System.out.println(player2 + " won " + player1Losses + " rounds.");
+        System.out.println(player2 + " lost " + player1Wins + " rounds.");
+        System.out.println("=========================");
+
         return battleLog.toString();
     }
 

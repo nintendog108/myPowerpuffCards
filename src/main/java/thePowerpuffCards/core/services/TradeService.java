@@ -35,7 +35,16 @@ public class TradeService {
         String tradeId = (String) tradeData.get("Id");
         String cardId = (String) tradeData.get("CardToTrade");
         String type = (String) tradeData.get("Type");
-        int minDamage = (int) tradeData.get("MinimumDamage");
+      //  int minDamage = (int) tradeData.get("MinimumDamage");
+        Integer minDamage = (tradeData.get("MinimumDamage") instanceof Number)
+                ? ((Number) tradeData.get("MinimumDamage")).intValue()
+                : null;
+
+        if (minDamage == null) {
+            throw new IllegalArgumentException("MinimumDamage cannot be null or non-numeric!");
+        }
+        System.out.println("JSON Content: " + json);
+        System.out.println("Extracted MinimumDamage: " + tradeData.get("MinimumDamage"));
 
      //   System.out.println("*************   Parsed TradeService: tradeId=" + tradeId + ", cardId=" + cardId);
 

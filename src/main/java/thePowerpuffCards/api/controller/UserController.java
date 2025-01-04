@@ -96,7 +96,7 @@ public class UserController extends Controller {
             player2 = requestBody.get("opponent");
         }
 
-        // Zufälligen Gegner auswählen, wenn keiner angegeben wurde
+        // Zufälligen Gegner
         if (player2 == null) {
             player2 = usersDao.getRandomOpponent(player1);
             if (player2 == null) {

@@ -2,7 +2,7 @@ package testing;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-
+// LÄUFT 5/6 , createTrade Success nicht.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import thePowerpuffCards.persistence.dao.TradeDaoDb;
 import java.io.BufferedWriter;
 import java.io.StringWriter;
 import java.util.Map;
-// LÄUFT 5/6 , createTrade Success nicht.
+
 public class TradeControllerTest {
     private TradeController tradeController;
 

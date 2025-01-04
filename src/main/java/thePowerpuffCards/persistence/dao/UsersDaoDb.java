@@ -76,7 +76,7 @@ public class UsersDaoDb implements Dao<User> {
         SELECT uid, username, password, token, coins
         FROM users
         WHERE username = ?;
-    """;
+        """;
 
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, username);
@@ -116,9 +116,10 @@ public class UsersDaoDb implements Dao<User> {
                         resultSet.getString(2), // username
                         resultSet.getString(3)  // password
                 );
-                user.setToken(resultSet.getString(4)); // token
-                user.setCoins(resultSet.getInt(5));     // Coins setzen
-                user.setId(resultSet.getInt(1));       // Set the ID in User object
+                user.setId(resultSet.getInt(1));
+                user.setToken(resultSet.getString(4));
+                user.setCoins(resultSet.getInt(5));
+
                 result.add(user);
             }
         } catch (SQLException e) {
@@ -136,11 +137,11 @@ public class UsersDaoDb implements Dao<User> {
         try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
         INSERT INTO users (username, password, token, coins)
         VALUES (?, ?, ?, ?) RETURNING uid;
-    """);
+        """);
              PreparedStatement statsStatement = DbConnection.getInstance().prepareStatement("""
         INSERT INTO stats (username, games_played, games_won, games_lost, elo)
         VALUES (?, 0, 0, 0, 100);
-    """)) {
+        """)) {
             // Benutzer speichern
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
@@ -174,9 +175,9 @@ public class UsersDaoDb implements Dao<User> {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getPassword());
             statement.setString(3, user.getToken());
-            statement.setInt(4, user.getCoins()); // Hier werden die Coins korrekt gesetzt
-            statement.setInt(5, user.getId());    // Benutzer-ID setzen
-            statement.executeUpdate();           // Verwende executeUpdate() für UPDATE-Statements
+            statement.setInt(4, user.getCoins());
+            statement.setInt(5, user.getId());
+            statement.executeUpdate();
         } catch (SQLException e) {
             logger.severe("Error updating user: " + e.getMessage());
         }
@@ -186,7 +187,7 @@ public class UsersDaoDb implements Dao<User> {
         String sql = """
         INSERT INTO userprofile (username, name, bio, image)
         VALUES (?, ?, ?, ?)
-        ON CONFLICT (username) DO UPDATE 
+        ON CONFLICT (username) DO UPDATE
         SET name = EXCLUDED.name, bio = EXCLUDED.bio, image = EXCLUDED.image;
     """;
 
@@ -263,13 +264,18 @@ public class UsersDaoDb implements Dao<User> {
                 String name = rs.getString("name");
                 double damage = rs.getDouble("damage");
                 ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
-                MonsterType monsterType = rs.getString("monster_type") != null
-                        ? MonsterType.valueOf(rs.getString("monster_type"))
-                        : null;
+                MonsterType monsterType = null;
+                if (rs.getString("monster_type") != null) {
+                    monsterType = MonsterType.valueOf(rs.getString("monster_type"));
+                }
 
-                Card card = monsterType != null
-                        ? new MonsterCard(id, name, damage, elementType, monsterType)
-                        : new SpellCard(id, name, damage, elementType);
+                Card card;
+                if (monsterType != null) {
+                    card = new MonsterCard(id, name, damage, elementType, monsterType);
+                } else {
+                    card = new SpellCard(id, name, damage, elementType);
+                }
+
 
                 cards.add(card);
             }
@@ -300,12 +306,12 @@ public class UsersDaoDb implements Dao<User> {
 
     public synchronized List<Card> getDeck(String username) {
         String sql = """
-    SELECT card.cid, card.name, card.damage, card.element_type, card.monster_type
-    FROM deck
-    JOIN card ON deck.cid = card.cid
-    WHERE deck.username = ?
-    ORDER BY deck.deck_slot
-    """;
+            SELECT card.cid, card.name, card.damage, card.element_type, card.monster_type
+            FROM deck
+            JOIN card ON deck.cid = card.cid
+            WHERE deck.username = ?
+            ORDER BY deck.deck_slot
+            """;
 
         List<Card> deck = new ArrayList<>();
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {

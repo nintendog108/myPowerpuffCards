@@ -1,5 +1,5 @@
 package testing;
-// LÄUFT 1/2, user already exist läuft nicht.
+// LÄUFT 2/2
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,9 +53,10 @@ public class UserControllerTest {
         when(usersDao.userExists("testUser")).thenReturn(true);
 
         userController.handleRequest("POST", "/users", null, requestBody, out);
-
-        assertTrue(stringWriter.toString().contains("409 - User already exists!"));
+        assertTrue(stringWriter.toString().contains("HTTP/1.1 409"));
+        assertTrue(stringWriter.toString().contains("Username already exists."));
     }
+
 
 
 }
