@@ -104,13 +104,33 @@ public class BattleService {
 
         return battleLog.toString();
     }
-
+/*
     private void saveDeckChanges() {
         usersDao.clearDeck(player1);
         usersDao.saveDeck(player1, player1Deck);
         usersDao.clearDeck(player2);
         usersDao.saveDeck(player2, player2Deck);
     }
+*/
+private void saveDeckChanges() {
+    if (!player1Deck.isEmpty() && usersDao.getDeck(player1).size() > 0) {
+        System.out.println("DEBUG: Lösche altes Deck für " + player1);
+        usersDao.clearDeck(player1);
+        usersDao.saveDeck(player1, player1Deck);
+    } else {
+        System.out.println("⚠️ WARNUNG: " + player1 + " hat keine Karten mehr und wird nicht gespeichert.");
+    }
+
+    if (!player2Deck.isEmpty() && usersDao.getDeck(player2).size() > 0) {
+        System.out.println("DEBUG: Lösche altes Deck für " + player2);
+        usersDao.clearDeck(player2);
+        usersDao.saveDeck(player2, player2Deck);
+    } else {
+        System.out.println("⚠️ WARNUNG: " + player2 + " hat keine Karten mehr und wird nicht gespeichert.");
+    }
+}
+
+
 
 
     private void applyBooster(Card card) {

@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static thePowerpuffCards.persistence.dao.UsersDaoDb.logger;
+
 public class UserController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UsersDaoDb usersDao;
@@ -96,16 +98,19 @@ public class UserController extends Controller {
             player2 = requestBody.get("opponent");
         }
 
-        // Zufälligen Gegner
+        // Zufälligen Gegner auswählen, wenn keiner angegeben wurde
         if (player2 == null) {
             player2 = usersDao.getRandomOpponent(player1);
             if (player2 == null) {
+                logger.warning("❌ Spieler " + player1 + " kann kein Spiel starten! Kein Gegner mit einem gültigen Deck.");
                 throw new IOException("No available opponent with a valid deck.");
             }
         }
 
+        System.out.println("DEBUG: Gegner für " + player1 + " ist " + player2);
         return player2;
     }
+
 
 
     private void showScoreboard(Map<String, String> headers, BufferedWriter out) throws IOException {
@@ -169,6 +174,10 @@ public class UserController extends Controller {
         } else {
             // Fallback: leeres Profil zurückgeben
             sendNotFound(out);
+            /*out.write("HTTP/1.1 200 OK\r\n");
+            out.write("Content-Type: application/json\r\n");
+            out.write("\r\n");
+            out.write("{\"Name\":\"\",\"Bio\":\"\",\"Image\":\"\"}");*/
         }
         out.flush();
     }
@@ -190,6 +199,10 @@ public class UserController extends Controller {
                     updatedProfile.get("Image")
             );
             sendOk(out, "User profile updated.");
+            /*
+            out.write("HTTP/1.1 200 OK\r\n");
+            out.write("\r\n");
+            out.write("User profile updated successfully.");*/
         } catch (Exception e) {
             sendBadRequest(out, "Error updating user profile: " + e.getMessage());
         }

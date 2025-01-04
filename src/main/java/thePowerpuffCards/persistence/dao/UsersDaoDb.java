@@ -8,6 +8,7 @@ import thePowerpuffCards.core.models.cards.monster.MonsterType;
 import thePowerpuffCards.core.models.cards.spell.SpellCard;
 import thePowerpuffCards.persistence.DbConnection;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +17,7 @@ import java.util.logging.Logger;
 
 public class UsersDaoDb implements Dao<User> {
 
-    private static final Logger logger = Logger.getLogger(UsersDaoDb.class.getName());
+    public static final Logger logger = Logger.getLogger(UsersDaoDb.class.getName());
 
     public User findUserByUsernameAndPassword(String username, String password) {
         Collection<User> users = getAll();
@@ -285,6 +286,91 @@ public class UsersDaoDb implements Dao<User> {
 
         return cards;
     }
+    /*public void saveDeck(String username, List<Card> deck) {
+        String deleteSql = "DELETE FROM deck WHERE username = ?";
+        String insertSql = "INSERT INTO deck (username, cid, deck_slot) VALUES (?, ?, ?)";
+
+
+
+        try (Connection conn = DbConnection.getInstance().connect()) {
+            conn.setAutoCommit(false); // Startet eine Transaktion
+
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+                 PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+
+                // Vor dem Einfügen das alte Deck löschen
+                deleteStmt.setString(1, username);
+                int deletedRows = deleteStmt.executeUpdate();
+                System.out.println("DEBUG: Gelöschte Einträge für " + username + ": " + deletedRows);
+
+                for (int i = 0; i < deck.size(); i++) {
+                    insertStmt.setString(1, username);
+                    insertStmt.setString(2, deck.get(i).getId());
+                    insertStmt.setInt(3, i);
+                    insertStmt.addBatch();
+                }
+
+                insertStmt.executeBatch();
+                conn.commit(); // Transaktion erfolgreich abschließen
+
+            } catch (SQLException e) {
+                conn.rollback(); // Falls ein Fehler auftritt, zurücksetzen
+                logger.severe("Error saving deck: " + e.getMessage());
+            } finally {
+                conn.setAutoCommit(true); // AutoCommit wieder aktivieren
+            }
+        } catch (SQLException e) {
+            logger.severe("Database connection error: " + e.getMessage());
+        }
+    }*/
+    public void saveDeck(String username, List<Card> deck) {
+        if (deck.isEmpty()) {
+            logger.warning("⚠️ WARNUNG: " + username + " hat keine Karten mehr und kann kein weiteres Spiel starten!");
+            return;
+        }
+
+
+        String deleteSql = "DELETE FROM deck WHERE username = ?";
+        String insertSql = "INSERT INTO deck (username, cid, deck_slot) VALUES (?, ?, ?)";
+
+        try (Connection conn = DbConnection.getInstance().connect()) {
+            conn.setAutoCommit(false); // Transaktion starten
+
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+                 PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+
+                deleteStmt.setString(1, username);
+                int deletedRows = deleteStmt.executeUpdate();
+                System.out.println("DEBUG: Deck für " + username + " gelöscht: " + deletedRows + " Einträge");
+
+                for (int i = 0; i < deck.size(); i++) {
+                    insertStmt.setString(1, username);
+                    insertStmt.setString(2, deck.get(i).getId());
+                    insertStmt.setInt(3, i);
+                    insertStmt.addBatch();
+                }
+
+                insertStmt.executeBatch();
+                Thread.sleep(100); // 100 ms warten, um sicherzustellen, dass DB-Update sichtbar ist
+
+                conn.commit(); // Transaktion bestätigen
+
+                System.out.println("DEBUG: Deck für " + username + " erfolgreich gespeichert!");
+            } catch (SQLException e) {
+                conn.rollback();
+                logger.severe("Error saving deck: " + e.getMessage());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            logger.severe("Database connection error: " + e.getMessage());
+        }
+    }
+
+
+    /*
     public void saveDeck(String username, List<Card> deck) {
         String sql = """
         INSERT INTO deck (username, cid, deck_slot)
@@ -302,7 +388,8 @@ public class UsersDaoDb implements Dao<User> {
         } catch (SQLException e) {
             logger.severe("Error saving deck: " + e.getMessage());
         }
-    }
+    }*/
+
 
     public synchronized List<Card> getDeck(String username) {
         String sql = """
@@ -342,23 +429,29 @@ public class UsersDaoDb implements Dao<User> {
         }
 
         // Debug-Ausgabe, um zu überprüfen, ob Karten geladen wurden
-     //   System.out.println("Deck fetched for user: " + username + ", size: " + deck.size());
+     //   System.out.println("Deck fetched for user: + username + ", size: " + deck.size());
         return deck;
     }
 
 
     public void clearDeck(String username) {
-        String sql = """
-        DELETE FROM deck WHERE username = ?
-    """;
+        if (getDeck(username).isEmpty()) {
+            System.out.println("⚠️ WARNUNG: `clearDeck()` wurde aufgerufen, aber " + username + " hat kein Deck.");
+            return;
+        }
+
+        String sql = "DELETE FROM deck WHERE username = ?";
 
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, username);
-            stmt.executeUpdate();
+            int rowsDeleted = stmt.executeUpdate();
+            System.out.println("DEBUG: `clearDeck()` für " + username + " gelöscht: " + rowsDeleted + " Einträge");
         } catch (SQLException e) {
             logger.severe("Error clearing deck: " + e.getMessage());
         }
     }
+
+
     public Optional<Map<String, Integer>> getUserStats(String username) {
         String sql = """
         SELECT games_played, games_won, games_lost, elo
