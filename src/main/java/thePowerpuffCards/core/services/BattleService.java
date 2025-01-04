@@ -119,7 +119,7 @@ private void saveDeckChanges() {
         usersDao.clearDeck(player1);
         usersDao.saveDeck(player1, player1Deck);
     } else {
-        System.out.println("⚠️ WARNUNG: " + player1 + " hat keine Karten mehr und wird nicht gespeichert.");
+        System.out.println("DEBUG: nothing to save");
     }
 
     if (!player2Deck.isEmpty() && usersDao.getDeck(player2).size() > 0) {
@@ -127,7 +127,7 @@ private void saveDeckChanges() {
         usersDao.clearDeck(player2);
         usersDao.saveDeck(player2, player2Deck);
     } else {
-        System.out.println("⚠️ WARNUNG: " + player2 + " hat keine Karten mehr und wird nicht gespeichert.");
+        System.out.println("DEBUG: nothing to save");
     }
 }
 
