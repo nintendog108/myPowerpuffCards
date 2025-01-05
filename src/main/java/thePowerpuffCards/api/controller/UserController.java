@@ -55,6 +55,7 @@ public class UserController extends Controller {
             sendNotFound(out);
         }
     }
+    // initiate a battle between two players
     private void startBattle(Map<String, String> headers, String body, BufferedWriter out) throws IOException {
         String player1 = getUsernameFromHeaders(headers);
         if (player1 == null) {
@@ -71,7 +72,7 @@ public class UserController extends Controller {
         }
 
         try {
-            // Gegner bestimmen und Decks laden
+            // choose opponent and deck laden
             String player2 = determineOpponent(body, player1);
 
             List<Card> player1Deck = Optional.ofNullable(usersDao.getDeck(player1)).orElse(Collections.emptyList());
@@ -87,7 +88,7 @@ public class UserController extends Controller {
             }
 
 
-            // BattleService starten
+            // BattleService start
             BattleService battleService = new BattleService(player1, player2, player1Deck, player2Deck, usersDao);
             String battleResult = battleService.startBattle();
             sendOk(out, battleResult);
@@ -102,18 +103,18 @@ public class UserController extends Controller {
 
     private String determineOpponent(String body, String player1) throws IOException {
         String player2 = null;
-
-        // Gegner aus dem Body lesen, falls vorhanden
+// determine opponent for the battle
+        // reading from the body, if it's there
         if (body != null && !body.trim().isEmpty()) {
             Map<String, String> requestBody = objectMapper.readValue(body, Map.class);
             player2 = requestBody.get("opponent");
         }
 
-        // Zufälligen Gegner auswählen, wenn keiner angegeben wurde
+        // random opponent
         if (player2 == null) {
             player2 = usersDao.getRandomOpponent(player1);
             if (player2 == null) {
-                logger.warning("❌ Spieler " + player1 + " kann kein Spiel starten! Kein Gegner mit einem gültigen Deck.");
+                logger.warning("No available opponent for " + player1);
                 throw new IOException("No available opponent with a valid deck.");
             }
         }
@@ -183,12 +184,8 @@ public class UserController extends Controller {
             String jsonResponse = objectMapper.writeValueAsString(profile.get());
             sendOk(out, jsonResponse);
         } else {
-            // Fallback: leeres Profil zurückgeben
+            // fallback: leeres Profil
             sendNotFound(out);
-            /*out.write("HTTP/1.1 200 OK\r\n");
-            out.write("Content-Type: application/json\r\n");
-            out.write("\r\n");
-            out.write("{\"Name\":\"\",\"Bio\":\"\",\"Image\":\"\"}");*/
         }
         out.flush();
     }
@@ -210,10 +207,6 @@ public class UserController extends Controller {
                     updatedProfile.get("Image")
             );
             sendOk(out, "User profile updated.");
-            /*
-            out.write("HTTP/1.1 200 OK\r\n");
-            out.write("\r\n");
-            out.write("User profile updated successfully.");*/
         } catch (Exception e) {
             sendBadRequest(out, "Error updating user profile: " + e.getMessage());
         }
@@ -221,6 +214,7 @@ public class UserController extends Controller {
     }
 
     private String getUsernameFromHeaders(Map<String, String> headers) {
+        // extract username from Authorization header
         String authorization = headers.get("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             return null;

@@ -52,7 +52,6 @@ public class TransactionDaoDb implements Dao<Package> {
         }
     }
 
-
     @Override
     public void delete(Package aPackage) {
 

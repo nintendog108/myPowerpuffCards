@@ -16,7 +16,6 @@ import thePowerpuffCards.persistence.dao.UsersDaoDb;
 import thePowerpuffCards.persistence.dao.TransactionDaoDb;
 import java.io.BufferedWriter;
 import java.io.IOException;
-
 import java.util.*;
 
 import static thePowerpuffCards.persistence.dao.UsersDaoDb.logger;
@@ -28,7 +27,6 @@ public class PackageController extends Controller {
     private final AuthService authService;
     private final TransactionDaoDb transDao;
 
-
     public PackageController(PackageDaoDb packageDao, UsersDaoDb usersDao, AuthService authService, TransactionDaoDb transDao) {
         this.packageDao = packageDao;
         this.usersDao = usersDao;
@@ -37,11 +35,12 @@ public class PackageController extends Controller {
     }
 
     public void handleRequest(String method, String path, Map<String, String> headers, String body, BufferedWriter out) throws IOException {
+        // routes requests based on HTTP method and path
         switch (method) {
             case "POST":
                 if (path.equals("/packages")) {
                     createPackage(body, out);
-                }else if (path.equals("/transactions/packages")){
+                } else if (path.equals("/transactions/packages")) {
                     acquirePackageController(headers, out);
                 } else {
                     sendNotFound(out, "Something went wrong");
@@ -53,73 +52,72 @@ public class PackageController extends Controller {
         }
     }
 
-   public void acquirePackageController(Map<String, String> headers, BufferedWriter out) throws IOException {
-       try {
-           // Überprüfe Authentifizierung
-           if (!authService.authenticate(headers)) {
-               sendUnauthorized(out, "Unauthorized request.");
-               return;
-           }
+    public void acquirePackageController(Map<String, String> headers, BufferedWriter out) throws IOException {
+        try {
+            // check authentication
+            if (!authService.authenticate(headers)) {
+                sendUnauthorized(out, "Unauthorized request.");
+                return;
+            }
 
-           // Extrahiere Benutzername aus dem Header
-           String authorization = headers.get("Authorization");
-           if (authorization == null || !authorization.startsWith("Bearer ")) {
-               sendBadRequest(out, "Invalid Authorization header.");
-               return;
-           }
-           String username = authorization.substring("Bearer ".length()).split("-")[0];
+            // extract username from Authorization header
+            String authorization = headers.get("Authorization");
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                sendBadRequest(out, "Invalid Authorization header.");
+                return;
+            }
+            String username = authorization.substring("Bearer ".length()).split("-")[0];
 
-           Optional<User> user = usersDao.getText(username);
+            Optional<User> user = usersDao.getText(username);
 
-           if (user.isEmpty()) {
-               sendBadRequest(out, "User not found.");
-               return;
-           }
+            if (user.isEmpty()) {
+                sendBadRequest(out, "User not found.");
+                return;
+            }
 
-           // Überprüfen, ob der Benutzer genug Coins hat
-           User userEntity = user.get();
-           // Überprüfen, ob der Benutzer genug Coins hat
-           if (userEntity.getCoins() < 5) {
-               sendForbidden(out, "Not enough money to buy a package.");
-               return;
-           }
+            // check if user has enough coins
+            User userEntity = user.get();
+            if (userEntity.getCoins() < 5) {
+                sendForbidden(out, "Not enough money to buy a package.");
+                return;
+            }
 
+            // acquire package
+            Package randomPackage = packageDao.acquirePackage();
+            if (randomPackage == null) { // no packages available
+                logger.warning("❌ No packages available for " + username);
+                sendNotFound(out, "No packages available.");
+                return;
+            }
 
-           // Paket erwerben
-           Package randomPackage = packageDao.acquirePackage();
-           if (randomPackage == null) { // Falls keine Pakete mehr verfügbar sind
-               logger.warning("❌ Keine Pakete mehr verfügbar für " + username);
-               sendNotFound(out, "No packages available.");
-               return;
-           }
+            // update user and package data
+            userEntity.setCoins(userEntity.getCoins() - 5);
+            usersDao.update(userEntity, new String[]{
+                    userEntity.getUsername(),
+                    userEntity.getPassword(),
+                    userEntity.getToken()
+            });
+            transDao.update(randomPackage, new String[]{username});
 
-           // Update User und Package
-           userEntity.setCoins(userEntity.getCoins() - 5);
-           usersDao.update(userEntity, new String[]{
-                   userEntity.getUsername(),
-                   userEntity.getPassword(),
-                   userEntity.getToken()
-           });
-           transDao.update(randomPackage, new String[]{username});
-
-           // Erfolgsmeldung senden
-           out.write("HTTP/1.1 201 Created\r\n");
-           out.write("Content-Type: application/json\r\n");
-           out.write("\r\n");
-           out.write("{\"message\":\"Package acquired successfully\", \"packageId\": " + randomPackage.getId() + "}");
-       } catch (IllegalArgumentException e) {
-           sendBadRequest(out, e.getMessage());
-       } catch (Exception e) {
-           sendBadRequest(out, "Error acquiring package: " + e.getMessage()); //TODO: hier wird noch 500 Internal error angezeigt statt 4xx
-       }
-       out.flush();
-   }
+            // send success response
+            out.write("HTTP/1.1 201 Created\r\n");
+            out.write("Content-Type: application/json\r\n");
+            out.write("\r\n");
+            out.write("{\"message\":\"Package acquired successfully\", \"packageId\": " + randomPackage.getId() + "}");
+        } catch (IllegalArgumentException e) {
+            sendBadRequest(out, e.getMessage());
+        } catch (Exception e) {
+            sendBadRequest(out, "Error acquiring package: " + e.getMessage());
+        }
+        out.flush();
+    }
 
     private void createPackage(String body, BufferedWriter out) throws IOException {
         try {
+            // parse package data from request body
             List<Map<String, Object>> packages = objectMapper.readValue(body, new TypeReference<>() {});
             List<Card> cards = new ArrayList<>();
-            CardDaoDb cardDao = new CardDaoDb(); // CardDaoDb-Instanz erstellen
+            CardDaoDb cardDao = new CardDaoDb(); // create CardDaoDb instance
 
             for (Map<String, Object> packageMap : packages) {
                 String id = (String) packageMap.get("Id");
@@ -140,9 +138,8 @@ public class PackageController extends Controller {
                     card = new MonsterCard(id, name, damage, ElementType.getType(name), monsterType);
                 }
 
-                // Speichere die Karte
+                // save card to database
                 cardDao.saveCard(card);
-
                 cards.add(card);
             }
 
@@ -167,5 +164,4 @@ public class PackageController extends Controller {
         }
         out.flush();
     }
-
 }

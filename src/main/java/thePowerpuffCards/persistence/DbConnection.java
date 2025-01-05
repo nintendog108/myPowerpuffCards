@@ -19,7 +19,7 @@ public class DbConnection implements Closeable {
             exception.printStackTrace();
         }
 
-        // Verbindung zur neu erstellten "monsterdb" herstellen
+        // establish connection to the newly created "monsterdb"
         try (Connection connection = getInstance().connect("monsterdb")) {
             String sql = """
                     CREATE TABLE IF NOT EXISTS users (
@@ -137,7 +137,7 @@ public class DbConnection implements Closeable {
         return getConnection().prepareStatement(sql);
     }
 
-
+// fälle, wo bestimmte fehler erlaubt sind
     public static boolean executeSql(Connection connection, String sql, boolean ignoreIfFails) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.execute(sql);
@@ -149,11 +149,10 @@ public class DbConnection implements Closeable {
             return false;
         }
     }
-
+// standard fälle
     public static boolean executeSql(Connection connection, String sql) throws SQLException {
         return executeSql(connection, sql, false);
     }
-
     @Override
     public void close() {
         if (connection != null) {

@@ -49,7 +49,7 @@ public class TradeController extends Controller {
     public void deleteTrade(Map<String, String> headers, String tradeId, BufferedWriter out) throws IOException {
         System.out.println("*************   Deleting trade with ID: " + tradeId);
         try {
-            // Benutzername aus dem Token extrahieren
+            // username from the token extrahieren
             String token = headers.get("Authorization").split(" ")[1]; // "kienboec-mtcgToken"
             String username = token.split("-")[0]; // "kienboec"
          //   System.out.println("*************   Username from header: " + username);
@@ -105,10 +105,9 @@ public class TradeController extends Controller {
                 sendBadRequest(out, "Invalid path format.");
                 return;
             }
-            String tradeId = pathParts[2]; // Extrahiere die Trade-ID
-
-            // Verarbeite die Käuferkarten-ID
-            String buyerCardId = body.replace("\"", ""); // Entferne Anführungszeichen
+            String tradeId = pathParts[2]; // extract trade-id
+            // buyer card id processing
+            String buyerCardId = body.replace("\"", ""); // remove ""
             System.out.println("Trade ID: " + tradeId + ", Buyer Card ID: " + buyerCardId);
 
             tradeDao.acceptTrade(tradeId, buyerUsername, buyerCardId);
@@ -129,10 +128,10 @@ public class TradeController extends Controller {
     private String getUsernameFromHeaders(Map<String, String> headers) {
         String authorization = headers.get("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return null; // Return null if the header is missing or invalid
+            return null; // return null if the header is missing or invalid
         }
 
-        // Extract the username (e.g., "kienboec" from "Bearer kienboec-mtcgToken")
+        // Extract the username
         return authorization.substring("Bearer ".length()).split("-")[0];
     }
 

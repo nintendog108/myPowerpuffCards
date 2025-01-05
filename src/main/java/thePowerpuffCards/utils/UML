@@ -1,185 +1,215 @@
 @startuml
-skinparam classAttributeIconSize 0
-skinparam packageStyle rectangle
-
-
-package "thePowerpuffCards" {
-    package "api.controller" {
-        class SessionController {
-            - Database database
-            + handleRequest(String method, String path, String body, BufferedWriter out)
-        }
-        class UserController {
-            - Database database
-            + handleRequest(String method, String path, String body, BufferedWriter out)
-        }
+package "Models" {
+    class User {
+        - int id
+        - String username
+        - String password
+        - int coins
+        - Stack stack
+        - Deck deck
+        - String token
     }
 
-    package "database" {
-        class Database {
-            - Map<String, User> userStorage
-            - Map<String, Session> sessionStorage
-            + addUser(User user)
-            + addSession(Session session)
-            + findUser(String username)
-            + findUserByUsernameAndPassword(String username, String password)
-            + getAllSessions()
-            + removeSessionById(String sessionId)
-        }
+    class Card {
+        - String Id
+        - ElementType type
+        - String name
+        - double damage
+        + getName()
+        + getDamage()
+        + getElementType()
+        + setDamage()
+        + setId()
     }
 
-    package "server" {
-        class HttpServer {
-            - ExecutorService threadPool
-            - UserController userController
-            - SessionController sessionController
-            + start(int port)
-        }
-        class ClientHandler {
-            - Socket clientSocket
-            - UserController userController
-            - SessionController sessionController
-            + run()
-        }
+    class MonsterCard {
+    }
+    class SpellCard {
     }
 
-    package "services.models" {
-        class User {
-            - String username
-            - String password
-            - int coins
-            - Stack stack
-            - Deck deck
-            - int ELO
-            - String token
-            + getUsername()
-            + getPassword()
-            + setUsername(String username)
-            + setPassword(String password)
-        }
+    Card <|-- MonsterCard
+    Card <|-- SpellCard
 
-        class Session {
-            - String sessionId
-            - String username
-            + getSessionId()
-            + getUsername()
-        }
-
-        package "cards" {
-            abstract class Card {
-                - String name
-                - int damage
-                - ElementType type
-                + getName()
-                + getDamage()
-                + getElementType()
-            }
-
-            class CardPile {
-                - List<Card> cards
-                + addCard(Card card)
-                + removeCard(Card card)
-                + getCards(): List<Card>
-                + size(): int
-            }
-
-            class Deck extends CardPile {
-                + defineDeck(List<Card> selectedCards)
-                + isValidDeck(): boolean
-                + selectBestCardsFromCollection(List<Card> collection)
-            }
-
-            class Stack extends CardPile {
-                + showStack()
-                + countCardsByElement(ElementType elementType)
-            }
-
-            class Package {
-                - List<Card> cards
-                + getCards(): List<Card>
-            }
-
-            class ElementType {
-                FIRE
-                WATER
-                EARTH
-                WIND
-                DIVINE
-            }
-
-            class MonsterCard extends Card {
-                - MonsterType monsterType
-                + getMonsterType(): String
-            }
-
-            class SpellCard extends Card {
-                + getSpellEffect(): String
-            }
-
-            class MonsterType {
-                DRAGON
-                GOBLIN
-                ORK
-                WIZARD
-                KNIGHT
-            }
-        }
+    class ElementType {
     }
 
-    package "services" {
-        class BattleService {
-            - List<Card> player1Deck
-            - List<Card> player2Deck
-            - String player1
-            - String player2
-            - static int MAX_ROUNDS = 100
-            + startBattle()
-            - calculateRoundResult(Card player1Card, Card player2Card): int
-            - calculateDamage(Card attackingCard, Card defendingCard): int
-            - determineWinner()
-        }
+    class CardPile {
+        - List<Card> cards
+    }
+    class Deck {
+        + defineDeck()
+    }
+    class Stack {
+    }
 
-        class ScoreBoard {
-            - Map<String, Integer> userScores
-            + addUser(String username)
-            + updateScore(String username, int score)
-            + getScore(String username): int
-            + showScoreBoard()
-        }
+    CardPile <|-- Deck
+    CardPile <|-- Stack
+}
 
-        class TradeService {
-            - String tradeId
-            - Card offeredCard
-            - String requiredCardType
-            - int minDamage
-            - String offeredByUser
-            + validateCardForTrade(Card card): boolean
-            + executeTrade(Card buyerCard, Stack buyerStack, Stack sellerStack): boolean
-            + getTradeId(): String
-            + getOfferedCard(): Card
-            + getRequiredCardType(): String
-            + getMinDamage(): int
-            + getOfferedByUser(): String
-        }
+package "Services" {
+    class AuthService {
+        - UsersDaoDb usersDaoDb
+        + boolean authenticate(headers)
+    }
+
+    class BattleService {
+        - UsersDaoDb usersDao
+        + startBattle()
+        + calculateRoundResult()
+        + determineWinner()
+    }
+
+    class TradeService {
+        - String tradeId
+        - Card offeredCard
+        - String requiredCardType
+        - int minDamage
+        + boolean validateCardForTrade()
+        + List<TradeService> fetchAllTrades()
     }
 }
 
-' Relationships
-Database --> SessionController
-Database --> UserController
-UserController --> User
-SessionController --> Session
+package "Controllers" {
+    class Controller {
+        + handleRequest()
+    }
 
-ClientHandler --> UserController
-ClientHandler --> SessionController
-Deck --> Card
-Stack --> Card
-Package --> Card
-BattleService --> Card
-TradeService --> Card
-TradeService --> Stack
-MonsterType --> MonsterCard
-ElementType --> Card
-ElementType --> SpellCard
+    class CardController {
+        + showAllCards()
+        + configureDeck()
+    }
+    class UserController {
+        + registerUser()
+        + startBattle()
+        + showScoreboard()
+    }
+    class PackageController {
+        + createPackage()
+        + acquirePackageController()
+    }
+    class SessionController {
+        + createSession()
+    }
+    class TradeController {
+        + createTrade()
+        + acceptTrade()
+        + listTrades()
+    }
 
+    Controller <|-- CardController
+    Controller <|-- UserController
+    Controller <|-- PackageController
+    Controller <|-- SessionController
+    Controller <|-- TradeController
+}
+
+package "Persistence" {
+    class Dao<T> {
+        + Optional<T> get(int id)
+        + Optional<T> getText(String text)
+        + Collection<T> getAll()
+        + void save(T t)
+        + void update(T t, String[] params)
+        + void delete(T t)
+    }
+
+    class UsersDaoDb {
+        + findUserByUsernameAndPassword()
+        + userExists()
+        + save()
+        + update()
+        + delete()
+        + getDeck()
+        + saveDeck()
+        + clearDeck()
+        + getCardsFromStack()
+        + getUserStats()
+        + getScoreboard()
+    }
+
+    class TradeDaoDb {
+        + createTrade()
+        + getAllTrades()
+        + updateTradeStatus()
+        + deleteTrade()
+        + acceptTrade()
+    }
+
+    class CardDaoDb {
+        + saveCard()
+        + getCardById()
+        + transferCard()
+    }
+
+    class PackageDaoDb {
+        + savePackage()
+        + acquirePackage()
+        + generateDefaultPackages()
+    }
+
+    class TransactionDaoDb {
+        + save()
+        + update()
+    }
+
+    Dao <|.. UsersDaoDb
+    Dao <|.. TradeDaoDb
+    Dao <|.. CardDaoDb
+    Dao <|.. PackageDaoDb
+    Dao <|.. TransactionDaoDb
+}
+
+package "Server" {
+    class HttpServer {
+        + start(port)
+    }
+
+    class ClientHandler {
+        + run()
+    }
+
+    class Router {
+        + getController(route)
+    }
+
+    HttpServer --> Router
+    Router --> Controller
+    ClientHandler --> Router
+    ClientHandler --> Controller
+}
+class DbConnection {
+    + static DbConnection getInstance()
+    + Connection connect(String database)
+    + Connection connect()
+    + synchronized Connection getConnection()
+    + PreparedStatement prepareStatement(String sql)
+    + void setAutoCommit(boolean autoCommit)
+    + void commit()
+    + void rollback()
+    + static boolean executeSql(Connection connection, String sql)
+    + static boolean executeSql(Connection connection, String sql, boolean ignoreIfFails)
+    + void close()
+    + static void initDb()
+}
+
+User -- Deck
+User -- Stack
+Deck -- Card
+Stack -- Card
+Card -- ElementType
+BattleService -- UsersDaoDb
+TradeService -- Card
+TradeService -- TradeDaoDb
+AuthService -- UsersDaoDb
+TradeController -- TradeDaoDb
+CardController -- UsersDaoDb
+UserController -- UsersDaoDb
+PackageController -- UsersDaoDb
+PackageController -- PackageDaoDb
+SessionController -- UsersDaoDb
+DbConnection -- UsersDaoDb
+DbConnection -- CardDaoDb
+DbConnection -- PackageDaoDb
+DbConnection -- TradeDaoDb
+DbConnection -- TransactionDaoDb
 @enduml

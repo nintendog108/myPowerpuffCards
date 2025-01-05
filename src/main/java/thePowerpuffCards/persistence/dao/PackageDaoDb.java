@@ -12,34 +12,36 @@ import thePowerpuffCards.core.models.cards.Package;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
+
 public class PackageDaoDb {
 
     private static final Logger logger = Logger.getLogger(PackageDaoDb.class.getName());
+
+    // saves a package to the database
     public long savePackage(Package pckg) {
         String insertFirstCard = "INSERT INTO packages (cid) VALUES (?) RETURNING pid";
         String insertAllCards = "INSERT INTO packages (pid, cid) VALUES (?, ?)";
 
         try {
             DbConnection.getInstance().setAutoCommit(false);
-
             int packageId;
 
-            // Erste Karte einfügen und `pid` abrufen
+            // insert the first card and get the package ID
             try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertFirstCard)) {
                 stmt.setString(1, pckg.getCards().get(0).getId());
-                ResultSet rs = stmt.executeQuery(); // Abrufen des Ergebnisses
+                ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
-                    packageId = rs.getInt("pid"); // Generierte `pid` abrufen
-                    pckg.setId(packageId);       // Setze die Paket-ID im Paketobjekt
+                    packageId = rs.getInt("pid");
+                    pckg.setId(packageId);
                 } else {
                     throw new SQLException("Failed to retrieve package ID.");
                 }
             }
 
-            // Weitere Karten einfügen
+            // insert the rest of the cards into the package
             try (PreparedStatement stmt2 = DbConnection.getInstance().prepareStatement(insertAllCards)) {
                 for (int i = 1; i < pckg.getCards().size(); i++) {
-                    stmt2.setInt(1, pckg.getId()); // Verwende dieselbe Paket-ID
+                    stmt2.setInt(1, pckg.getId());
                     stmt2.setString(2, pckg.getCards().get(i).getId());
                     stmt2.addBatch();
                 }
@@ -63,24 +65,22 @@ public class PackageDaoDb {
                 System.err.println("Failed to reset auto-commit: " + ex.getMessage());
             }
         }
-
         return -1;
     }
 
+    // retrieves and removes the oldest available package from the database
     public Package acquirePackage() throws SQLException {
-        // SQL-Abfrage: Ein Paket löschen und Karten abrufen
         String sql = """
         DELETE FROM packages
         WHERE pid = (SELECT MIN(pid) FROM packages)
         RETURNING pid, cid
-    """;
+        """;
 
-        // SQL-Abfrage: Kartendetails abrufen
         String cardDetailsSql = """
         SELECT cid, name, damage, element_type, monster_type
         FROM card
         WHERE cid = ?
-    """;
+        """;
 
         Map<Integer, List<Card>> packageMap = new HashMap<>();
 
@@ -115,17 +115,18 @@ public class PackageDaoDb {
             }
         }
 
-        // **Falls keine Pakete mehr verfügbar sind, erstelle neue**
+        // if no packages are left, generate new ones
         if (packageMap.isEmpty()) {
-            logger.warning("❌ Keine Pakete mehr verfügbar. Erstelle automatisch neue Pakete.");
-            generateDefaultPackages(); // Erstellt neue Pakete
-            return acquirePackage();   // Versucht erneut, ein Paket abzurufen
+            logger.info("❌ No packages available. Generating default packages.");
+            generateDefaultPackages();
+            return acquirePackage();
         }
 
-        // Das erste (älteste) Paket zurückgeben
         int packageId = packageMap.keySet().iterator().next();
         return new Package(packageId, packageMap.get(packageId));
     }
+
+    // generates default card packages if none are available
     private void generateDefaultPackages() throws SQLException {
         String insertPackageSql = "INSERT INTO packages (cid) VALUES (?) RETURNING pid";
         String insertCardSql = "INSERT INTO card (cid, name, damage, element_type, monster_type) VALUES (?, ?, ?, ?, ?)";
@@ -141,7 +142,6 @@ public class PackageDaoDb {
         try {
             DbConnection.getInstance().setAutoCommit(false);
 
-            // Neue Karten hinzufügen
             for (Card card : defaultCards) {
                 try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertCardSql)) {
                     stmt.setString(1, card.getId());
@@ -150,83 +150,17 @@ public class PackageDaoDb {
                     stmt.setString(4, card.getElementType().name());
                     MonsterType monsterType = card instanceof MonsterCard ? MonsterType.getMonsterType(card.getName()) : null;
                     stmt.setString(5, monsterType != null ? monsterType.name() : null);
-
-                    stmt.executeUpdate();
-                }
-            }
-
-            // Neues Paket mit den Karten erstellen
-            int packageId;
-            try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertPackageSql)) {
-                stmt.setString(1, defaultCards.get(0).getId());
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    packageId = rs.getInt("pid");
-                } else {
-                    throw new SQLException("Fehler beim Erstellen eines neuen Pakets.");
-                }
-            }
-
-            for (int i = 1; i < defaultCards.size(); i++) {
-                try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement("INSERT INTO packages (pid, cid) VALUES (?, ?)")) {
-                    stmt.setInt(1, packageId);
-                    stmt.setString(2, defaultCards.get(i).getId());
                     stmt.executeUpdate();
                 }
             }
 
             DbConnection.getInstance().commit();
-            logger.info("✅ Neue Standard-Pakete wurden erfolgreich erstellt.");
+            logger.info("✅ Default packages generated successfully.");
         } catch (SQLException e) {
             DbConnection.getInstance().rollback();
-            logger.severe("❌ Fehler beim Erstellen neuer Pakete: " + e.getMessage());
+            logger.severe("❌ Error generating default packages: " + e.getMessage());
         } finally {
             DbConnection.getInstance().setAutoCommit(true);
         }
     }
-
-
-    public Collection<Package> getAll() {
-        ArrayList<Package> result = new ArrayList<>();
-        try (PreparedStatement statement = DbConnection.getInstance().prepareStatement("""
-            SELECT packages.pid, packages.cid, card.name, card.damage, card.element_type, card.monster_type
-            FROM packages
-            JOIN card ON packages.cid = card.cid
-            ORDER BY packages.pid
-            """)
-        ) {
-            ResultSet resultSet = statement.executeQuery();
-            int oldPid = -1;
-            List<Card> cards = new ArrayList<>();
-            Package pckg = null;
-            while (resultSet.next()) {
-                int packageId = resultSet.getInt("pid");
-                if((oldPid != -1) && (packageId != oldPid)){
-                    pckg = new Package(oldPid, cards);
-                    result.add(pckg);
-                    cards.clear();
-                }
-                oldPid = packageId;
-                String id = resultSet.getString("cid");
-                String name = resultSet.getString("name");
-                double damage = resultSet.getDouble("damage");
-                ElementType elementType = ElementType.valueOf(resultSet.getString("element_type"));
-                MonsterType monsterType = MonsterType.valueOf(resultSet.getString("monster_type"));
-                if(resultSet.getString("monster_type") != null){
-                    cards.add(new MonsterCard(id, name, damage, elementType, monsterType));
-                } else {
-                    cards.add(new SpellCard(id, name, damage, elementType));
-                }
-            }
-            pckg = new Package(oldPid, cards);
-            result.add(pckg);
-        } catch (SQLException e) {
-            logger.severe("Error : " + e.getMessage());
-        }
-        return result;
-    }
-
-
-
-
 }
