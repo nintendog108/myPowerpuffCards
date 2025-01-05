@@ -12,36 +12,34 @@ import thePowerpuffCards.core.models.cards.Package;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
-
 public class PackageDaoDb {
 
     private static final Logger logger = Logger.getLogger(PackageDaoDb.class.getName());
-
-    // saves a package to the database
     public long savePackage(Package pckg) {
         String insertFirstCard = "INSERT INTO packages (cid) VALUES (?) RETURNING pid";
         String insertAllCards = "INSERT INTO packages (pid, cid) VALUES (?, ?)";
 
         try {
             DbConnection.getInstance().setAutoCommit(false);
+
             int packageId;
 
-            // insert the first card and get the package ID
+            // first card einfügen und `pid` abrufen
             try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertFirstCard)) {
                 stmt.setString(1, pckg.getCards().get(0).getId());
-                ResultSet rs = stmt.executeQuery();
+                ResultSet rs = stmt.executeQuery(); // ergebnis rufen
                 if (rs.next()) {
-                    packageId = rs.getInt("pid");
-                    pckg.setId(packageId);
+                    packageId = rs.getInt("pid"); //pid abrufen
+                    pckg.setId(packageId);       // setze die Paket-ID im Paketobjekt
                 } else {
                     throw new SQLException("Failed to retrieve package ID.");
                 }
             }
 
-            // insert the rest of the cards into the package
+            // weitere Karten einfügen
             try (PreparedStatement stmt2 = DbConnection.getInstance().prepareStatement(insertAllCards)) {
                 for (int i = 1; i < pckg.getCards().size(); i++) {
-                    stmt2.setInt(1, pckg.getId());
+                    stmt2.setInt(1, pckg.getId()); // verwende dieselbe Paket-ID
                     stmt2.setString(2, pckg.getCards().get(i).getId());
                     stmt2.addBatch();
                 }
@@ -65,22 +63,24 @@ public class PackageDaoDb {
                 System.err.println("Failed to reset auto-commit: " + ex.getMessage());
             }
         }
+
         return -1;
     }
 
-    // retrieves and removes the oldest available package from the database
     public Package acquirePackage() throws SQLException {
+        // ein Paket löschen und Karten abrufen
         String sql = """
         DELETE FROM packages
         WHERE pid = (SELECT MIN(pid) FROM packages)
         RETURNING pid, cid
-        """;
+    """;
 
+        // SQL-Abfrage: Kartendetails abrufen
         String cardDetailsSql = """
         SELECT cid, name, damage, element_type, monster_type
         FROM card
         WHERE cid = ?
-        """;
+    """;
 
         Map<Integer, List<Card>> packageMap = new HashMap<>();
 
@@ -115,18 +115,17 @@ public class PackageDaoDb {
             }
         }
 
-        // if no packages are left, generate new ones
+        // falls keine Pakete mehr verfügbar sind, erstelle neue
         if (packageMap.isEmpty()) {
-            logger.info("❌ No packages available. Generating default packages.");
-            generateDefaultPackages();
-            return acquirePackage();
+            logger.warning("❌ Keine Pakete mehr verfügbar. Erstelle automatisch neue Pakete.");
+            generateDefaultPackages(); // erstellt neue Pakete
+            return acquirePackage();   // versucht erneut, ein Paket abzurufen
         }
 
+        // das erste (älteste) Paket zurückgeben
         int packageId = packageMap.keySet().iterator().next();
         return new Package(packageId, packageMap.get(packageId));
     }
-
-    // generates default card packages if none are available
     private void generateDefaultPackages() throws SQLException {
         String insertPackageSql = "INSERT INTO packages (cid) VALUES (?) RETURNING pid";
         String insertCardSql = "INSERT INTO card (cid, name, damage, element_type, monster_type) VALUES (?, ?, ?, ?, ?)";
@@ -142,6 +141,7 @@ public class PackageDaoDb {
         try {
             DbConnection.getInstance().setAutoCommit(false);
 
+            // Neue Karten hinzufügen
             for (Card card : defaultCards) {
                 try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertCardSql)) {
                     stmt.setString(1, card.getId());
@@ -150,17 +150,42 @@ public class PackageDaoDb {
                     stmt.setString(4, card.getElementType().name());
                     MonsterType monsterType = card instanceof MonsterCard ? MonsterType.getMonsterType(card.getName()) : null;
                     stmt.setString(5, monsterType != null ? monsterType.name() : null);
+
+                    stmt.executeUpdate();
+                }
+            }
+
+            // neues Paket mit den Karten erstellen
+            int packageId;
+            try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertPackageSql)) {
+                stmt.setString(1, defaultCards.get(0).getId());
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    packageId = rs.getInt("pid");
+                } else {
+                    throw new SQLException("Fehler beim Erstellen eines neuen Pakets.");
+                }
+            }
+
+            for (int i = 1; i < defaultCards.size(); i++) {
+                try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement("INSERT INTO packages (pid, cid) VALUES (?, ?)")) {
+                    stmt.setInt(1, packageId);
+                    stmt.setString(2, defaultCards.get(i).getId());
                     stmt.executeUpdate();
                 }
             }
 
             DbConnection.getInstance().commit();
-            logger.info("✅ Default packages generated successfully.");
+            logger.info("✅ Neue Standard-Pakete wurden erfolgreich erstellt.");
         } catch (SQLException e) {
             DbConnection.getInstance().rollback();
-            logger.severe("❌ Error generating default packages: " + e.getMessage());
+            logger.severe("❌ Fehler beim Erstellen neuer Pakete: " + e.getMessage());
         } finally {
             DbConnection.getInstance().setAutoCommit(true);
         }
     }
+
+
+
+
 }

@@ -286,7 +286,43 @@ public class UsersDaoDb implements Dao<User> {
 
         return cards;
     }
+    /*public void saveDeck(String username, List<Card> deck) {
+        String deleteSql = "DELETE FROM deck WHERE username = ?";
+        String insertSql = "INSERT INTO deck (username, cid, deck_slot) VALUES (?, ?, ?)";
 
+
+
+        try (Connection conn = DbConnection.getInstance().connect()) {
+            conn.setAutoCommit(false); // Startet eine Transaktion
+
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+                 PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+
+                // Vor dem Einfügen das alte Deck löschen
+                deleteStmt.setString(1, username);
+                int deletedRows = deleteStmt.executeUpdate();
+                System.out.println("DEBUG: Gelöschte Einträge für " + username + ": " + deletedRows);
+
+                for (int i = 0; i < deck.size(); i++) {
+                    insertStmt.setString(1, username);
+                    insertStmt.setString(2, deck.get(i).getId());
+                    insertStmt.setInt(3, i);
+                    insertStmt.addBatch();
+                }
+
+                insertStmt.executeBatch();
+                conn.commit(); // Transaktion erfolgreich abschließen
+
+            } catch (SQLException e) {
+                conn.rollback(); // Falls ein Fehler auftritt, zurücksetzen
+                logger.severe("Error saving deck: " + e.getMessage());
+            } finally {
+                conn.setAutoCommit(true); // AutoCommit wieder aktivieren
+            }
+        } catch (SQLException e) {
+            logger.severe("Database connection error: " + e.getMessage());
+        }
+    }*/
     public void saveDeck(String username, List<Card> deck) {
         if (deck.isEmpty()) {
             logger.warning("⚠️ WARNUNG: `saveDeck()` wurde aufgerufen, aber das Deck von " + username + " ist leer.");

@@ -63,6 +63,9 @@ public class TradeService {
         return new TradeService(tradeId, offeredCard, type, minDamage, offeredByUser);
     }
 
+    public void setOfferedByUser(String offeredByUser) {
+        this.offeredByUser = offeredByUser;
+    }
 
     public static boolean validateCardForTrade(Card card, String requiredType, int minDamage) {
         if (card.getDamage() < minDamage) {
@@ -80,10 +83,16 @@ public class TradeService {
         return true;
     }
 
+
+
+
     // Extend TradeService
+
     public static List<TradeService> fetchAllTrades(TradeDaoDb tradeDaoDb) {
         return tradeDaoDb.getAllTrades();
     }
+
+
 
     // easy getters
     public String getTradeId() {
