@@ -103,17 +103,17 @@ public class TradeDaoDb {
                     throw new SQLException("Cannot trade with yourself.");
                 }
 
-                Card buyerCard = cardDao.getCardById(buyerCardId); // Use CardDaoDb here
+                Card buyerCard = cardDao.getCardById(buyerCardId);
               //  System.out.println("Buyer card details: " + buyerCard);
                 if (!TradeService.validateCardForTrade(buyerCard, requiredType, minDamage)) {
                     throw new SQLException("Card does not meet trade requirements.");
                 }
 
-                // Perform the card transfer
+                // perform the card transfer
                 cardDao.transferCard(buyerCardId, buyerUsername, sellerUsername);
                 cardDao.transferCard(offeredCardId, sellerUsername, buyerUsername);
 
-                // Remove the trade
+                // and remove the trade
                 updateTradeStatus(tradeId, "completed");
 
             } else {

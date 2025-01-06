@@ -340,7 +340,7 @@ public class UsersDaoDb implements Dao<User> {
                 checkStmt.setString(1, username);
                 ResultSet rs = checkStmt.executeQuery();
                 if (rs.next() && rs.getInt(1) > 0) {
-                    logger.warning("⚠️ WARNUNG: `saveDeck()` wurde aufgerufen, aber " + username + " hat bereits ein Deck. Es wird vorher gelöscht.");
+               //     logger.warning("⚠️ WARNUNG: `saveDeck()` wurde aufgerufen, aber " + username + " hat bereits ein Deck. Es wird vorher gelöscht.");
                     try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
                         deleteStmt.setString(1, username);
                         deleteStmt.executeUpdate();
@@ -358,11 +358,11 @@ public class UsersDaoDb implements Dao<User> {
 
                 insertStmt.executeBatch();
                 conn.commit();
-                logger.info("✅ Deck für " + username + " erfolgreich gespeichert!");
+                logger.info("✅ Deck for " + username + " is saved!");
 
             } catch (SQLException e) {
                 conn.rollback();
-                logger.severe("❌ Fehler beim Speichern des Decks: " + e.getMessage());
+                logger.severe("❌ there is an error while saving deck " + e.getMessage());
             } finally {
                 conn.setAutoCommit(true);
             }
@@ -423,7 +423,7 @@ public class UsersDaoDb implements Dao<User> {
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
             stmt.setString(1, username);
             int rowsDeleted = stmt.executeUpdate();
-            logger.info("✅ Deck für " + username + " gelöscht: " + rowsDeleted + " Karten entfernt.");
+            logger.info("✅ Deck für " + username + " gelöscht: " );//+ rowsDeleted + " Karten entfernt.");
         } catch (SQLException e) {
             logger.severe("❌ Fehler beim Löschen des Decks für " + username + ": " + e.getMessage());
         }

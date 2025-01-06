@@ -40,7 +40,7 @@ public class UserControllerTest {
     void setup() {
         MockitoAnnotations.openMocks(this);
         userController = new UserController(usersDao);
-        cardController = new CardController(usersDao); // Hier initialisieren
+        cardController = new CardController(usersDao);
         stringWriter = new StringWriter();
         out = new BufferedWriter(stringWriter);
     }
@@ -66,7 +66,7 @@ public class UserControllerTest {
 
         userController.handleRequest("POST", "/users", null, requestBody, out);
         assertTrue(stringWriter.toString().contains("HTTP/1.1 409"));
-        assertTrue(stringWriter.toString().contains("Username already exists."));
+        assertTrue(stringWriter.toString().contains("User already exists."));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class UserControllerTest {
         User user = new User("kienboec", "daniel");
         when(usersDao.getText("kienboec")).thenReturn(Optional.of(user));
 
-        // Stack des Benutzers simulieren (Karten als MonsterCard oder SpellCard speichern)
+        // stack simulieren
         when(usersDao.getCardsFromStack("kienboec")).thenReturn(List.of(
                 new MonsterCard("card1", "FireGoblin", 10.0, ElementType.FIRE, MonsterType.GOBLIN),
                 new SpellCard("card2", "WaterSpell", 20.0, ElementType.WATER),

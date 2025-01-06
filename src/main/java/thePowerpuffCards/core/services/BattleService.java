@@ -29,9 +29,17 @@ public class BattleService {
         this.battleLog = new StringBuilder();
         this.usersDao = usersDao;
     }
-
+/*
+  * Special interactions are checked in the following order:
+ * 1. Goblins are afraid of Dragons → Goblin automatically loses.
+ * 2. Wizards can control Orks → Wizard automatically wins.
+ * 3. Knights drown against Water-type monsters → Knight automatically loses.
+ * 4. Krakens are immune to spells → Kraken automatically wins against spell cards.
+ * 5. Fire Elves can evade Dragons → Fire Elf automatically wins.
+ *
+ * If no special conditions apply, the card with the higher damage value wins.*/
     public String startBattle() {
-        battleLog.setLength(0); // Alte Logs löschen
+        battleLog.setLength(0); // alte Logs löschen
         battleLog.append("Starting battle: ").append(player1).append(" vs ").append(player2).append("\n");
 
         System.out.println("Starting battleeeeee: " + player1 + " vs " + player2); // Nur hier loggen
@@ -115,23 +123,27 @@ public class BattleService {
 
 private void saveDeckChanges() {
     if (!player1Deck.isEmpty() && usersDao.getDeck(player1).size() > 0) {
-        System.out.println("DEBUG: Lösche altes Deck für " + player1);
+        System.out.println("DEBUG: deleting old deck for  " + player1);
         usersDao.clearDeck(player1);
         usersDao.saveDeck(player1, player1Deck);
-    } else {
+    }/* else {
         System.out.println("DEBUG: nothing to save");
-    }
+    }*/
 
     if (!player2Deck.isEmpty() && usersDao.getDeck(player2).size() > 0) {
-        System.out.println("DEBUG: Lösche altes Deck für " + player2);
+        System.out.println("DEBUG: deleting old deck for " + player2);
         usersDao.clearDeck(player2);
         usersDao.saveDeck(player2, player2Deck);
-    } else {
+    } /*else {
         System.out.println("DEBUG: nothing to save");
-    }
+    } */
 }
 
-
+/*
+* Mit einer 50% Wahrscheinlichkeit erhält ein Spieler ein Power-Up Booster.
+* Sobald der Booster aktiviert ist, wird die applyBooster() aufgerufen
+* und diese Methode verdoppelt den aktuellen Schaden der card
+* */
     private void applyBooster(Card card) {
         if (card != null) {
             System.out.println("Applying booster to card: " + card.getName());
@@ -193,7 +205,14 @@ private void saveDeckChanges() {
         return MonsterType.getMonsterType(kraken.getName()) == MonsterType.KRAKEN &&
                 opponent instanceof SpellCard;
     }
-
+/*
+*  * - Water beats Fire → Damage is doubled (×2.0).
+ * - Fire beats Normal → Damage is doubled (×2.0).
+ * - Normal beats Water → Damage is doubled (×2.0).
+ * - Fire is weak against Water → Damage is halved (×0.5).
+ * - Water is weak against Normal → Damage is halved (×0.5).
+ * - Normal is weak against Fire → Damage is halved (×0.5).
+* */
     private int calculateDamage(Card card1, Card card2) {
         double damageMultiplier = 1.0;
 

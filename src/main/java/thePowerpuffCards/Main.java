@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         DbConnection.initDb();
         System.out.println("Hello World!");
-        HttpServer server = new HttpServer();
+        HttpServer server = new HttpServer();  // 1
         server.start(10001);
     }
 }

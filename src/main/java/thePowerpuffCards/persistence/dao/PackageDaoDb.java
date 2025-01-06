@@ -36,7 +36,7 @@ public class PackageDaoDb {
                 }
             }
 
-            // weitere Karten einfügen
+            // weitere cards einfügen
             try (PreparedStatement stmt2 = DbConnection.getInstance().prepareStatement(insertAllCards)) {
                 for (int i = 1; i < pckg.getCards().size(); i++) {
                     stmt2.setInt(1, pckg.getId()); // verwende dieselbe Paket-ID
@@ -117,7 +117,7 @@ public class PackageDaoDb {
 
         // falls keine Pakete mehr verfügbar sind, erstelle neue
         if (packageMap.isEmpty()) {
-            logger.warning("❌ Keine Pakete mehr verfügbar. Erstelle automatisch neue Pakete.");
+          //  logger.warning("❌ there are no packages left. Generating new packages.");
             generateDefaultPackages(); // erstellt neue Pakete
             return acquirePackage();   // versucht erneut, ein Paket abzurufen
         }
@@ -141,7 +141,7 @@ public class PackageDaoDb {
         try {
             DbConnection.getInstance().setAutoCommit(false);
 
-            // Neue Karten hinzufügen
+            // die neue cards hinzufügen
             for (Card card : defaultCards) {
                 try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertCardSql)) {
                     stmt.setString(1, card.getId());
@@ -155,7 +155,7 @@ public class PackageDaoDb {
                 }
             }
 
-            // neues Paket mit den Karten erstellen
+            // neues Paket mit den cards erstellen
             int packageId;
             try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(insertPackageSql)) {
                 stmt.setString(1, defaultCards.get(0).getId());
@@ -163,7 +163,7 @@ public class PackageDaoDb {
                 if (rs.next()) {
                     packageId = rs.getInt("pid");
                 } else {
-                    throw new SQLException("Fehler beim Erstellen eines neuen Pakets.");
+                    throw new SQLException("There is an error while generating new package.");
                 }
             }
 
@@ -176,10 +176,10 @@ public class PackageDaoDb {
             }
 
             DbConnection.getInstance().commit();
-            logger.info("✅ Neue Standard-Pakete wurden erfolgreich erstellt.");
+            logger.info("✅ new standard packages are created!");
         } catch (SQLException e) {
             DbConnection.getInstance().rollback();
-            logger.severe("❌ Fehler beim Erstellen neuer Pakete: " + e.getMessage());
+            logger.severe("❌ there is a problem while creating new packages: " + e.getMessage());
         } finally {
             DbConnection.getInstance().setAutoCommit(true);
         }

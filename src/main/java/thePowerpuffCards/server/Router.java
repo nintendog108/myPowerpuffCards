@@ -7,14 +7,17 @@ import thePowerpuffCards.persistence.dao.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/*
+* Router empfängt http anfragen und leitet sie an Controller weiter
+*
+* */
 public class Router {
     Map<String, Controller> routes = new HashMap<>();
     public Router(){
 
         // create babies of daos
         UsersDaoDb usersDao = new UsersDaoDb();
-        CardDaoDb cardDao = new CardDaoDb();
+     //  CardDaoDb cardDao = new CardDaoDb();
         PackageDaoDb packageDao = new PackageDaoDb();
         TransactionDaoDb transDao = new TransactionDaoDb();
         TradeDaoDb tradeDao = new TradeDaoDb();
@@ -29,7 +32,7 @@ public class Router {
 
         // routes
         routes.put("/users", userController);
-        routes.put("/sessions", sessionController);
+        routes.put("/sessions", sessionController); //  3
         routes.put("/packages", packageController);
         routes.put("/transactions", packageController);
         routes.put("/cards", cardController);

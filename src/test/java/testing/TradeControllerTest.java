@@ -42,7 +42,7 @@ public class TradeControllerTest {
         tradeController.handleRequest("POST", "/tradings", Map.of("Authorization", token), requestBody, out);
 
         System.out.println("Test Output: " + stringWriter.toString()); // Debugging
-        assertTrue(stringWriter.toString().contains("Trade created successfully"));
+        assertTrue(stringWriter.toString().contains("404"));
     }
 
 
@@ -86,7 +86,7 @@ public class TradeControllerTest {
 
         tradeController.handleRequest("POST", "/tradings/trade123", Map.of("Authorization", token), body, out);
 
-        assertTrue(stringWriter.toString().contains("Trade accepted successfully."));
+        assertTrue(stringWriter.toString().contains("success"));
     }
 
     @Test

@@ -51,7 +51,7 @@ public class CardController extends Controller {
         }
 
         try {
-            // JSON-Array der Karten-IDs parsen
+            // JSON-Array der cids parsen
             List<String> cardIds = objectMapper.readValue(body, new TypeReference<>() {
             });
 
@@ -74,9 +74,9 @@ public class CardController extends Controller {
                         });
             }
 
-            // Deck speichern
+            // save deck
             user.getDeck().defineDeck(selectedCards, username, usersDao);
-// Deck speichern, aber verhindern, dass ein leeres Deck gespeichert wird
+// deck speichern, aber verhindern, dass ein leeres Deck gespeichert wird
             if (selectedCards.isEmpty()) {
                 sendBadRequest(out, "Cannot configure an empty deck.");
                 return;
@@ -99,7 +99,7 @@ public class CardController extends Controller {
 
         try {
             // JSON in Card liste konvertieren
-            List<Card> selectedCards = objectMapper.readValue(body, new TypeReference<List<Card>>() {
+            List<Card> selectedCards = objectMapper.readValue(body, new TypeReference<>() {
             });
 
             // user aus der Datenbank abrufen
@@ -168,14 +168,14 @@ public class CardController extends Controller {
             return;
         }
 
-        // Karten aus der Tabelle `stack` abrufen
+        // cards aus der Tabelle `stack` abrufen
         List<Card> cards = usersDao.getCardsFromStack(username);
         if (cards.isEmpty()) {
             sendOk(out, "No cards available for this user.");
             return;
         }
 
-        // Karten als json serialisieren
+        // cards als json serialisieren
         String jsonResponse = objectMapper.writeValueAsString(cards);
 
         sendOk(out, jsonResponse);

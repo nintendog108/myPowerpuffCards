@@ -27,7 +27,7 @@ public class UserController extends Controller {
     }
 
     public void handleRequest(String method, String path, Map<String, String> headers, String body, BufferedWriter out) throws IOException {
-        System.out.println("Handling request: " + method + " " + path); // Debug-Ausgabe
+        System.out.println("Handling request: " + method + " " + path); // Debug
         String[] pathParts = path.split("/");
         if ("POST".equalsIgnoreCase(method) && "/battles".equals(path)) {
             startBattle(headers, body, out);
@@ -71,7 +71,7 @@ public class UserController extends Controller {
         }
 
         try {
-            // Gegner bestimmen und Decks laden
+            // gegner bestimmen und Decks laden
             String player2 = determineOpponent(body, player1);
 
             List<Card> player1Deck = Optional.ofNullable(usersDao.getDeck(player1)).orElse(Collections.emptyList());
@@ -87,7 +87,7 @@ public class UserController extends Controller {
             }
 
 
-            // BattleService starten
+            // BattleService start
             BattleService battleService = new BattleService(player1, player2, player1Deck, player2Deck, usersDao);
             String battleResult = battleService.startBattle();
             sendOk(out, battleResult);
@@ -103,13 +103,13 @@ public class UserController extends Controller {
     private String determineOpponent(String body, String player1) throws IOException {
         String player2 = null;
 
-        // Gegner aus dem Body lesen, falls vorhanden
+        // gegner aus dem Body lesen, falls vorhanden
         if (body != null && !body.trim().isEmpty()) {
             Map<String, String> requestBody = objectMapper.readValue(body, Map.class);
             player2 = requestBody.get("opponent");
         }
 
-        // Zufälligen Gegner auswählen, wenn keiner angegeben wurde
+        // Zufälligen Gegner auswählen
         if (player2 == null) {
             player2 = usersDao.getRandomOpponent(player1);
             if (player2 == null) {
@@ -162,7 +162,7 @@ public class UserController extends Controller {
         User newUser = objectMapper.readValue(body, User.class);
 
         if (usersDao.userExists(newUser.getUsername())) {
-            sendConflict(out, "Username already exists.");
+            sendConflict(out, "User already exists.");
         } else {
             usersDao.save(newUser);
             out.write("HTTP/1.1 201 Created\r\n");

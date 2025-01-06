@@ -20,7 +20,10 @@ import java.io.IOException;
 import java.util.*;
 
 import static thePowerpuffCards.persistence.dao.UsersDaoDb.logger;
-
+/*
+*
+*  prüft the money, zieht Coins ab und speichert die Karten im Stack des Nutzers
+* */
 public class PackageController extends Controller {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final PackageDaoDb packageDao;

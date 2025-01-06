@@ -39,15 +39,17 @@ public class SessionController extends Controller {
         if (foundUser != null) {
             foundUser.setToken(foundUser.getUsername() + "-mtcgToken");
             usersDao.addSession(foundUser);
-            out.write("HTTP/1.1 200 OK\r\n");
+           sendOk(out, foundUser.getToken());
+       /*     out.write("HTTP/1.1 200 OK\r\n");
             out.write("Content-Type: text/plain\r\n");
             out.write("\r\n");
-            out.write(foundUser.getToken());
+            out.write(foundUser.getToken()); */
         } else {
-            out.write("HTTP/1.1 401 Unauthorized\r\n");
+            sendUnauthorized(out, "Invalid credentials");
+          /*  out.write("HTTP/1.1 401 Unauthorized\r\n");
             out.write("Content-Type: text/plain\r\n");
             out.write("\r\n");
-            out.write("Invalid credentials");
+            out.write("Invalid credentials");*/
         }
         out.flush();
     }

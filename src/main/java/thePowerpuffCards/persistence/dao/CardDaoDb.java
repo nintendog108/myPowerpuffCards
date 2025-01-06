@@ -8,8 +8,6 @@ import thePowerpuffCards.core.models.cards.Card;
 import thePowerpuffCards.core.models.cards.monster.MonsterCard;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 public class CardDaoDb {
@@ -43,7 +41,7 @@ public class CardDaoDb {
             logger.severe("Fehler beim Speichern der Karte: " + e.getMessage());
         }
     }
-
+/* ************************ CHANGED STUCTURE ! ****************
     public void addCardsToStack(String username, List<Card> cards) {
         String sql = """
         INSERT INTO stack (username, cid)
@@ -60,7 +58,7 @@ public class CardDaoDb {
         } catch (SQLException e) {
             logger.severe("Error adding cards to stack for user: " + e.getMessage());
         }
-    }
+    }*/
     public Card getCardById(String cardId) {
         String sql = "SELECT cid, name, damage, element_type, monster_type FROM card WHERE cid = ?";
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
@@ -84,6 +82,7 @@ public class CardDaoDb {
         }
         return null;
     }
+    // STACK adding
     public void transferCard(String cardId, String fromUser, String toUser) throws SQLException {
         String sql = "UPDATE stack SET username = ? WHERE cid = ? AND username = ?";
         try (PreparedStatement stmt = DbConnection.getInstance().prepareStatement(sql)) {
@@ -97,35 +96,4 @@ public class CardDaoDb {
         }
     }
 
-    /*
-    public List<Card> acquireCards() {
-        List<Card> cards = new ArrayList<>();
-        String sql = "SELECT * FROM card LIMIT 5";
-
-        try (Statement stmt = DbConnection.getInstance().prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                String id = rs.getString("cid");
-                String name = rs.getString("name");
-                double damage = rs.getDouble("damage");
-                ElementType elementType = ElementType.valueOf(rs.getString("element_type"));
-                String monsterTypeStr = rs.getString("monster_type");
-
-                Card card;
-                if (monsterTypeStr != null) {
-                    MonsterType monsterType = MonsterType.valueOf(monsterTypeStr);
-                    card = new MonsterCard(id, name, damage, elementType, monsterType);
-                } else {
-                    card = new SpellCard(id, name, damage, elementType);
-                }
-                cards.add(card);
-            }
-        } catch (SQLException e) {
-            logger.severe("Fehler beim Abrufen der Karten: " + e.getMessage());
-        }
-        return cards;
-    }
-}
-*/
 }

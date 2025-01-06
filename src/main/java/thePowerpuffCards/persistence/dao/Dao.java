@@ -8,6 +8,11 @@ import java.util.Optional;
  *
  * @param <T>
  */
+
+/* DAO: Persistenzschicht zur Speicherung und Verwaltung von users, cards und daten
+*
+*
+* */
 // DAO overview see: https://www.baeldung.com/java-dao-pattern
 public interface Dao<T> {
 
